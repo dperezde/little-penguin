@@ -1,0 +1,51 @@
+Delivered-To: danielperezdeandres@gmail.com
+Received: by 10.229.138.198 with SMTP id b6csp425892qcu;
+        Tue, 7 Oct 2014 14:46:48 -0700 (PDT)
+X-Received: by 10.66.237.132 with SMTP id vc4mr6110855pac.19.1412718407672;
+        Tue, 07 Oct 2014 14:46:47 -0700 (PDT)
+Return-Path: <little@www.eudyptula-challenge.org>
+Received: from www.eudyptula-challenge.org (li684-192.members.linode.com. [23.239.3.192])
+        by mx.google.com with ESMTP id kp1si16543735pbd.190.2014.10.07.14.46.47
+        for <danielperezdeandres@gmail.com>;
+        Tue, 07 Oct 2014 14:46:47 -0700 (PDT)
+Received-SPF: none (google.com: little@www.eudyptula-challenge.org does not designate permitted sender hosts) client-ip=23.239.3.192;
+Authentication-Results: mx.google.com;
+       spf=neutral (google.com: little@www.eudyptula-challenge.org does not designate permitted sender hosts) smtp.mail=little@www.eudyptula-challenge.org
+Received: by www.eudyptula-challenge.org (Postfix, from userid 1000)
+	id 63B75E4B3; Tue,  7 Oct 2014 21:48:07 +0000 (UTC)
+Date: Tue, 7 Oct 2014 21:48:07 +0000
+From: Little Penguin <little@eudyptula-challenge.org>
+To: Daniel Perez <danielperezdeandres@gmail.com>
+Subject: Re: [9ad18cb8934a] Task 02 Results
+Message-ID: <20141007214807.GG13664@eudyptula-challenge.org>
+References: <20141007174218.GA2354@cambridge>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20141007174218.GA2354@cambridge>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+
+On Tue, Oct 07, 2014 at 07:42:19PM +0200, Daniel Perez wrote:
+> Ok, here's my first attempt at task 02.
+> After booting Linus' newest kernel (3.17.0), and having some trouble
+> with grub updating, I've grabbed the last few lines from syslog up to
+> where the boot process begins.
+> 
+> Let's see if this does it
+
+> Oct  7 19:28:30 cambridge kernel: [    0.000000] Initializing cgroup subsys cpu
+> Oct  7 19:28:30 cambridge kernel: [    0.000000] Initializing cgroup subsys cpuacct
+> Oct  7 19:28:30 cambridge kernel: [    0.000000] Linux version 3.17.0 (dani@cambridge) (gcc version 4.8.1 (Ubuntu/Linaro 4.8.1-10ubuntu9) ) #2 SMP Tue Oct 7 16:25:42 CEST 2014
+> Oct  7 19:28:30 cambridge kernel: [    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-3.17.0 root=UUID=3122fa95-8cad-4171-9457-2351bce10272 ro quiet splash vt.handoff=7
+> Oct  7 19:28:30 cambridge kernel: [    0.000000] KERNEL supported cpus:
+> Oct  7 19:28:30 cambridge kernel: [    0.000000]   Intel GenuineIntel
+> Oct  7 19:28:30 cambridge kernel: [    0.000000]   AMD AuthenticAMD
+> Oct  7 19:28:30 cambridge kernel: [    0.000000]   Centaur CentaurHauls
+> Oct  7 19:28:30 cambridge kernel: [    0.000000] e820: BIOS-provided physical RAM map:
+
+Congratulations on passing this task!
+
+Your next task will be sent to you soon.  If it does not show up in your
+inbox in 2-3 hours, please email and let me know, the scripts act up
+sometimes and need to be prodded.
+

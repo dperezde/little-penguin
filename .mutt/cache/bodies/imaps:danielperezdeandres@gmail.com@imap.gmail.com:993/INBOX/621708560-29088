@@ -1,0 +1,22 @@
+Delivered-To: danielperezdeandres@gmail.com
+Received: by 10.229.138.198 with SMTP id b6csp184030qcu;
+        Fri, 3 Oct 2014 03:21:40 -0700 (PDT)
+X-Received: by 10.180.186.230 with SMTP id fn6mr11523137wic.44.1412331699449;
+        Fri, 03 Oct 2014 03:21:39 -0700 (PDT)
+Return-Path: <noreply@facturayoigo.com>
+Received: from mail2.facturayoigo.com (mail2.facturayoigo.com. [145.247.18.103])
+        by mx.google.com with ESMTP id ka3si8293716wjc.127.2014.10.03.03.21.39
+        for <DANIELPEREZDEANDRES@gmail.com>;
+        Fri, 03 Oct 2014 03:21:39 -0700 (PDT)
+Received-SPF: pass (google.com: domain of noreply@facturayoigo.com designates 145.247.18.103 as permitted sender) client-ip=145.247.18.103;
+Authentication-Results: mx.google.com;
+       spf=pass (google.com: domain of noreply@facturayoigo.com designates 145.247.18.103 as permitted sender) smtp.mail=noreply@facturayoigo.com
+Content-Type: text/html; charset=latin1
+Subject: =?iso-8859-1?Q?Esta es tu factura electr=F3nica?=
+Message-Id: <20141003102138.E38311C0FAF@mail2.facturayoigo.com>
+Date: Fri,  3 Oct 2014 12:21:38 +0200 (CEST)
+From: noreply@facturayoigo.com
+To: undisclosed-recipients:;
+
+<html><body>HOLA DANIEL, <br/>YA ESTÁ TU FACTURA DE SEPTIEMBRE 2014 <br/><br/>Tu factura electrónica de este mes ya está lista para que le eches un vistazo. El total es 36,78 euros.<br/>Puedes acceder haciendo <a href="https://www.facturayoigo.com/download?p=201409&h=2f76997debf75a6b04c0b20db5db31500c4de459">click aquí</a> durante los próximos 30 días o puedes entrar en Mi Yoigo, donde tienes disponibles las tres últimas facturas.<br/><br/>¡Ah! Recuerda que no somos spam. Añade noreply@facturayoigo.com a tus contactos y así nuestros emails llegarán siempre a tu Bandeja de entrada.<br/><br/><B>CUANDO TE HACE FALTA SUELTO LLEVAS UN BILLETE ENORME</B><br/>VERDAD VERDADERA</body></html>
+
