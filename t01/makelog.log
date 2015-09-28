@@ -1,0 +1,22 @@
+dani@wilson:~/Cosas_Telecas/kernprog$ make
+make -C /lib/modules/3.13.0-36-generic/build M=/home/dani/Cosas_Telecas/kernprog modules
+make[1]: Entering directory `/usr/src/linux-headers-3.13.0-36-generic'
+  CC [M]  /home/dani/Cosas_Telecas/kernprog/hello.o
+    Building modules, stage 2.
+      MODPOST 1 modules
+        CC      /home/dani/Cosas_Telecas/kernprog/hello.mod.o
+	  LD [M]  /home/dani/Cosas_Telecas/kernprog/hello.ko
+	  make[1]: Leaving directory `/usr/src/linux-headers-3.13.0-36-generic'
+	  dani@wilson:~/Cosas_Telecas/kernprog$ sudo insmod hello.
+	  hello.ko     hello.mod.o  hello.o      
+	  dani@wilson:~/Cosas_Telecas/kernprog$ sudo insmod hello.ko
+	  [sudo] password for dani: 
+	  dani@wilson:~/Cosas_Telecas/kernprog$ sudo rmmod hello 
+	  dani@wilson:~/Cosas_Telecas/kernprog$ vi Eudyptula/T01/makelog.log
+	  dani@wilson:~/Cosas_Telecas/kernprog$ tail -5 /var/log/kern.log
+	  Sep 29 09:16:45 wilson kernel: [   65.526229] type=1400 audit(1411975005.962:66): apparmor="STATUS" operation="profile_replace" profile="unconfined" name="/usr/lib/cups/backend/cups-pdf" pid=1867 comm="apparmor_parser"
+	  Sep 29 09:16:45 wilson kernel: [   65.526235] type=1400 audit(1411975005.962:67): apparmor="STATUS" operation="profile_replace" profile="unconfined" name="/usr/sbin/cupsd" pid=1867 comm="apparmor_parser"
+	  Sep 29 09:16:45 wilson kernel: [   65.526533] type=1400 audit(1411975005.962:68): apparmor="STATUS" operation="profile_replace" profile="unconfined" name="/usr/sbin/cupsd" pid=1867 comm="apparmor_parser"
+	  Sep 29 09:19:59 wilson kernel: [  258.823190] Hello, world
+	  Sep 29 09:20:08 wilson kernel: [  267.704086] Goodbye, cruel world
+

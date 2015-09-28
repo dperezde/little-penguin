@@ -1,0 +1,1132 @@
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Initializing cgroup subsys cpu
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Initializing cgroup subsys cpuacct
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Linux version 3.17.0 (dani@cambridge) (gcc version 4.8.1 (Ubuntu/Linaro 4.8.1-10ubuntu9) ) #2 SMP Tue Oct 7 16:25:42 CEST 2014
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-3.17.0 root=UUID=3122fa95-8cad-4171-9457-2351bce10272 ro quiet splash vt.handoff=7
+Oct  7 19:28:30 cambridge kernel: [    0.000000] KERNEL supported cpus:
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   Intel GenuineIntel
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   AMD AuthenticAMD
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   Centaur CentaurHauls
+Oct  7 19:28:30 cambridge kernel: [    0.000000] e820: BIOS-provided physical RAM map:
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009dbff] usable
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x000000000009dc00-0x000000000009ffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000000ce000-0x00000000000cffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000000dc000-0x00000000000dffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000000e4000-0x00000000000fffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x0000000000100000-0x00000000afe8ffff] usable
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000afe90000-0x00000000afe9afff] ACPI data
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000afe9b000-0x00000000afe9cfff] ACPI NVS
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000afe9d000-0x00000000afffffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000e0000000-0x00000000efffffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000fec00000-0x00000000fec0ffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BIOS-e820: [mem 0x00000000fff00000-0x00000000ffffffff] reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] NX (Execute Disable) protection: active
+Oct  7 19:28:30 cambridge kernel: [    0.000000] SMBIOS 2.4 present.
+Oct  7 19:28:30 cambridge kernel: [    0.000000] DMI: SAMSUNG ELECTRONICS CO., LTD. R59P/R60P/R61P/R59P/R60P/R61P, BIOS 07YI 03/05/2008
+Oct  7 19:28:30 cambridge kernel: [    0.000000] e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000] e820: remove [mem 0x000a0000-0x000fffff] usable
+Oct  7 19:28:30 cambridge kernel: [    0.000000] AGP: No AGP bridge found
+Oct  7 19:28:30 cambridge kernel: [    0.000000] e820: last_pfn = 0xafe90 max_arch_pfn = 0x400000000
+Oct  7 19:28:30 cambridge kernel: [    0.000000] MTRR default type: uncachable
+Oct  7 19:28:30 cambridge kernel: [    0.000000] MTRR fixed ranges enabled:
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   00000-9FFFF write-back
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   A0000-BFFFF uncachable
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   C0000-CFFFF write-protect
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   D0000-DFFFF uncachable
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   E0000-FFFFF write-protect
+Oct  7 19:28:30 cambridge kernel: [    0.000000] MTRR variable ranges enabled:
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   0 base 000000000 mask F80000000 write-back
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   1 base 080000000 mask FE0000000 write-back
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   2 base 0A0000000 mask FF0000000 write-back
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   3 base 0AFF00000 mask FFFF00000 uncachable
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   4 disabled
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   5 disabled
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   6 disabled
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   7 disabled
+Oct  7 19:28:30 cambridge kernel: [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+Oct  7 19:28:30 cambridge kernel: [    0.000000] original variable MTRRs
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 0, base: 0GB, range: 2GB, type WB
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 1, base: 2GB, range: 512MB, type WB
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 2, base: 2560MB, range: 256MB, type WB
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 3, base: 2815MB, range: 1MB, type UC
+Oct  7 19:28:30 cambridge kernel: [    0.000000] total RAM covered: 2815M
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Found optimal setting for mtrr clean up
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  gran_size: 64K 	chunk_size: 2M 	num_reg: 4  	lose cover RAM: 0G
+Oct  7 19:28:30 cambridge kernel: [    0.000000] New variable MTRRs
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 0, base: 0GB, range: 2GB, type WB
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 1, base: 2GB, range: 512MB, type WB
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 2, base: 2560MB, range: 256MB, type WB
+Oct  7 19:28:30 cambridge kernel: [    0.000000] reg 3, base: 2815MB, range: 1MB, type UC
+Oct  7 19:28:30 cambridge kernel: [    0.000000] found SMP MP-table at [mem 0x000f73c0-0x000f73cf] mapped at [ffff8800000f73c0]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Scanning 1 areas for low memory corruption
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Base memory trampoline at [ffff880000097000] 97000 size 24576
+Oct  7 19:28:30 cambridge kernel: [    0.000000] init_memory_mapping: [mem 0x00000000-0x000fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [mem 0x00000000-0x000fffff] page 4k
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BRK [0x01fc5000, 0x01fc5fff] PGTABLE
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BRK [0x01fc6000, 0x01fc6fff] PGTABLE
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BRK [0x01fc7000, 0x01fc7fff] PGTABLE
+Oct  7 19:28:30 cambridge kernel: [    0.000000] init_memory_mapping: [mem 0xafc00000-0xafdfffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [mem 0xafc00000-0xafdfffff] page 2M
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BRK [0x01fc8000, 0x01fc8fff] PGTABLE
+Oct  7 19:28:30 cambridge kernel: [    0.000000] init_memory_mapping: [mem 0xac000000-0xafbfffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [mem 0xac000000-0xafbfffff] page 2M
+Oct  7 19:28:30 cambridge kernel: [    0.000000] init_memory_mapping: [mem 0x80000000-0xabffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [mem 0x80000000-0xabffffff] page 2M
+Oct  7 19:28:30 cambridge kernel: [    0.000000] init_memory_mapping: [mem 0x00100000-0x7fffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [mem 0x00100000-0x001fffff] page 4k
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [mem 0x00200000-0x7fffffff] page 2M
+Oct  7 19:28:30 cambridge kernel: [    0.000000] init_memory_mapping: [mem 0xafe00000-0xafe8ffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [mem 0xafe00000-0xafe8ffff] page 4k
+Oct  7 19:28:30 cambridge kernel: [    0.000000] BRK [0x01fc9000, 0x01fc9fff] PGTABLE
+Oct  7 19:28:30 cambridge kernel: [    0.000000] RAMDISK: [mem 0x35966000-0x36caafff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: Early table checksum verification disabled
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: RSDP 0x00000000000F7310 000024 (v02 PTLTD )
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: XSDT 0x00000000AFE909F4 000064 (v01 SECCSD LH43STAR 06040000  LTP 00000000)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: FACP 0x00000000AFE9ACCE 0000F4 (v03 SEC    PRAHA    06040000 SEC  000F4240)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: DSDT 0x00000000AFE945E8 006672 (v01 ATI    SB600    06040000 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: FACS 0x00000000AFE9CFC0 000040
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: APIC 0x00000000AFE9ADC2 000054 (v01 PTLTD  ? APIC   06040000  LTP 00000000)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: MCFG 0x00000000AFE9AE16 00003C (v01 PTLTD    MCFG   06040000  LTP 00000000)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: HPET 0x00000000AFE9AE52 000038 (v01 PTLTD  HPETTBL  06040000  LTP 00000001)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: SLIC 0x00000000AFE9AE8A 000176 (v01 SECCSD LH43STAR 06040000  LTP 00000000)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: SSDT 0x00000000AFE91F03 00025F (v01 PmRef  Cpu0Tst  00003000 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: SSDT 0x00000000AFE91E5D 0000A6 (v01 PmRef  Cpu1Tst  00003000 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: SSDT 0x00000000AFE90A58 001405 (v01 PmRef  CpuPm    00003000 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: Local APIC address 0xfee00000
+Oct  7 19:28:30 cambridge kernel: [    0.000000] No NUMA configuration found
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Faking a node at [mem 0x0000000000000000-0x00000000afe8ffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Initmem setup node 0 [mem 0x00000000-0xafe8ffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   NODE_DATA [mem 0xafe8c000-0xafe8ffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]  [ffffea0000000000-ffffea0002bfffff] PMD -> [ffff8800ac800000-ffff8800af3fffff] on node 0
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Zone ranges:
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   DMA      [mem 0x00001000-0x00ffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   DMA32    [mem 0x01000000-0xffffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   Normal   empty
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Movable zone start for each node
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Early memory node ranges
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   node   0: [mem 0x00001000-0x0009cfff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   node   0: [mem 0x00100000-0xafe8ffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] On node 0 totalpages: 720428
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   DMA zone: 64 pages used for memmap
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   DMA zone: 21 pages reserved
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   DMA zone: 3996 pages, LIFO batch:0
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   DMA32 zone: 11195 pages used for memmap
+Oct  7 19:28:30 cambridge kernel: [    0.000000]   DMA32 zone: 716432 pages, LIFO batch:31
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: PM-Timer IO Port: 0x8008
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: Local APIC address 0xfee00000
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+Oct  7 19:28:30 cambridge kernel: [    0.000000] IOAPIC[0]: apic_id 2, version 33, address 0xfec00000, GSI 0-23
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: IRQ9 used by override.
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Using ACPI (MADT) for SMP configuration information
+Oct  7 19:28:30 cambridge kernel: [    0.000000] ACPI: HPET id: 0x43538301 base: 0xfed00000
+Oct  7 19:28:30 cambridge kernel: [    0.000000] smpboot: Allowing 2 CPUs, 0 hotplug CPUs
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x0009d000-0x0009dfff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x0009e000-0x0009ffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x000a0000-0x000cdfff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x000ce000-0x000cffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x000d0000-0x000dbfff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x000dc000-0x000dffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x000e0000-0x000e3fff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PM: Registered nosave memory: [mem 0x000e4000-0x000fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.000000] e820: [mem 0xb0000000-0xdfffffff] available for PCI devices
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Booting paravirtualized kernel on bare hardware
+Oct  7 19:28:30 cambridge kernel: [    0.000000] setup_percpu: NR_CPUS:256 nr_cpumask_bits:256 nr_cpu_ids:2 nr_node_ids:1
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PERCPU: Embedded 29 pages/cpu @ffff8800afa00000 s86656 r8192 d23936 u1048576
+Oct  7 19:28:30 cambridge kernel: [    0.000000] pcpu-alloc: s86656 r8192 d23936 u1048576 alloc=1*2097152
+Oct  7 19:28:30 cambridge kernel: [    0.000000] pcpu-alloc: [0] 0 1 
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Built 1 zonelists in Node order, mobility grouping on.  Total pages: 709148
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Policy zone: DMA32
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Kernel command line: BOOT_IMAGE=/boot/vmlinuz-3.17.0 root=UUID=3122fa95-8cad-4171-9457-2351bce10272 ro quiet splash vt.handoff=7
+Oct  7 19:28:30 cambridge kernel: [    0.000000] PID hash table entries: 4096 (order: 3, 32768 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] AGP: Checking aperture...
+Oct  7 19:28:30 cambridge kernel: [    0.000000] AGP: No AGP bridge found
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Calgary: detecting Calgary via BIOS EBDA area
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Calgary: Unable to locate Rio Grande table in EBDA - bailing!
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Memory: 2800168K/2881712K available (7432K kernel code, 1171K rwdata, 3516K rodata, 1348K init, 1300K bss, 81544K reserved)
+Oct  7 19:28:30 cambridge kernel: [    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Hierarchical RCU implementation.
+Oct  7 19:28:30 cambridge kernel: [    0.000000] 	RCU dyntick-idle grace-period acceleration is enabled.
+Oct  7 19:28:30 cambridge kernel: [    0.000000] 	RCU restricting CPUs from NR_CPUS=256 to nr_cpu_ids=2.
+Oct  7 19:28:30 cambridge kernel: [    0.000000] 	Offload RCU callbacks from all CPUs
+Oct  7 19:28:30 cambridge kernel: [    0.000000] 	Offload RCU callbacks from CPUs: 0-1.
+Oct  7 19:28:30 cambridge kernel: [    0.000000] RCU: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+Oct  7 19:28:30 cambridge kernel: [    0.000000] NR_IRQS:16640 nr_irqs:440 0
+Oct  7 19:28:30 cambridge kernel: [    0.000000] Console: colour dummy device 80x25
+Oct  7 19:28:30 cambridge kernel: [    0.000000] console [tty0] enabled
+Oct  7 19:28:30 cambridge kernel: [    0.000000] allocated 11534336 bytes of page_cgroup
+Oct  7 19:28:30 cambridge kernel: [    0.000000] please try 'cgroup_disable=memory' option if you don't want memory cgroups
+Oct  7 19:28:30 cambridge kernel: [    0.000000] hpet clockevent registered
+Oct  7 19:28:30 cambridge kernel: [    0.000000] tsc: Fast TSC calibration using PIT
+Oct  7 19:28:30 cambridge kernel: [    0.000000] tsc: Detected 1994.890 MHz processor
+Oct  7 19:28:30 cambridge kernel: [    0.008024] Calibrating delay loop (skipped), value calculated using timer frequency.. 3989.78 BogoMIPS (lpj=7979560)
+Oct  7 19:28:30 cambridge kernel: [    0.008032] pid_max: default: 32768 minimum: 301
+Oct  7 19:28:30 cambridge kernel: [    0.008054] ACPI: Core revision 20140724
+Oct  7 19:28:30 cambridge kernel: [    0.020238] ACPI: All ACPI Tables successfully acquired
+Oct  7 19:28:30 cambridge kernel: [    0.024074] Security Framework initialized
+Oct  7 19:28:30 cambridge kernel: [    0.024108] AppArmor: AppArmor initialized
+Oct  7 19:28:30 cambridge kernel: [    0.024111] Yama: becoming mindful.
+Oct  7 19:28:30 cambridge kernel: [    0.028226] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.031923] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.033688] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.033707] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.034342] Initializing cgroup subsys memory
+Oct  7 19:28:30 cambridge kernel: [    0.034359] Initializing cgroup subsys devices
+Oct  7 19:28:30 cambridge kernel: [    0.034368] Initializing cgroup subsys freezer
+Oct  7 19:28:30 cambridge kernel: [    0.034375] Initializing cgroup subsys blkio
+Oct  7 19:28:30 cambridge kernel: [    0.034382] Initializing cgroup subsys perf_event
+Oct  7 19:28:30 cambridge kernel: [    0.034389] Initializing cgroup subsys hugetlb
+Oct  7 19:28:30 cambridge kernel: [    0.034439] CPU: Physical Processor ID: 0
+Oct  7 19:28:30 cambridge kernel: [    0.034442] CPU: Processor Core ID: 0
+Oct  7 19:28:30 cambridge kernel: [    0.034447] mce: CPU supports 6 MCE banks
+Oct  7 19:28:30 cambridge kernel: [    0.034462] CPU0: Thermal monitoring enabled (TM2)
+Oct  7 19:28:30 cambridge kernel: [    0.034478] Last level iTLB entries: 4KB 128, 2MB 4, 4MB 4
+Oct  7 19:28:30 cambridge kernel: [    0.034478] Last level dTLB entries: 4KB 256, 2MB 0, 4MB 32, 1GB 0
+Oct  7 19:28:30 cambridge kernel: [    0.034719] Freeing SMP alternatives memory: 28K (ffffffff81e77000 - ffffffff81e7e000)
+Oct  7 19:28:30 cambridge kernel: [    0.038059] ftrace: allocating 28449 entries in 112 pages
+Oct  7 19:28:30 cambridge kernel: [    0.056634] ..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
+Oct  7 19:28:30 cambridge kernel: [    0.060000] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+Oct  7 19:28:30 cambridge kernel: [    0.060000] ...trying to set up timer (IRQ0) through the 8259A ...
+Oct  7 19:28:30 cambridge kernel: [    0.060000] ..... (found apic 0 pin 0) ...
+Oct  7 19:28:30 cambridge kernel: [    0.103177] ....... works.
+Oct  7 19:28:30 cambridge kernel: [    0.103181] smpboot: CPU0: Intel(R) Core(TM)2 Duo CPU     T5750  @ 2.00GHz (fam: 06, model: 0f, stepping: 0d)
+Oct  7 19:28:30 cambridge kernel: [    0.104000] Performance Events: PEBS fmt0+, 4-deep LBR, Core2 events, Intel PMU driver.
+Oct  7 19:28:30 cambridge kernel: [    0.104000] perf_event_intel: PEBS disabled due to CPU errata
+Oct  7 19:28:30 cambridge kernel: [    0.104000] ... version:                2
+Oct  7 19:28:30 cambridge kernel: [    0.104000] ... bit width:              40
+Oct  7 19:28:30 cambridge kernel: [    0.104000] ... generic registers:      2
+Oct  7 19:28:30 cambridge kernel: [    0.104000] ... value mask:             000000ffffffffff
+Oct  7 19:28:30 cambridge kernel: [    0.104000] ... max period:             000000007fffffff
+Oct  7 19:28:30 cambridge kernel: [    0.104000] ... fixed-purpose events:   3
+Oct  7 19:28:30 cambridge kernel: [    0.104000] ... event mask:             0000000700000003
+Oct  7 19:28:30 cambridge kernel: [    0.105568] x86: Booting SMP configuration:
+Oct  7 19:28:30 cambridge kernel: [    0.105574] .... node  #0, CPUs:      #1
+Oct  7 19:28:30 cambridge kernel: [    0.118691] x86: Booted up 1 node, 2 CPUs
+Oct  7 19:28:30 cambridge kernel: [    0.118699] smpboot: Total of 2 processors activated (7979.56 BogoMIPS)
+Oct  7 19:28:30 cambridge kernel: [    0.118786] NMI watchdog: enabled on all CPUs, permanently consumes one hw-PMU counter.
+Oct  7 19:28:30 cambridge kernel: [    0.120226] devtmpfs: initialized
+Oct  7 19:28:30 cambridge kernel: [    0.126596] evm: security.selinux
+Oct  7 19:28:30 cambridge kernel: [    0.126601] evm: security.SMACK64
+Oct  7 19:28:30 cambridge kernel: [    0.126604] evm: security.capability
+Oct  7 19:28:30 cambridge kernel: [    0.128069] PM: Registering ACPI NVS region [mem 0xafe9b000-0xafe9cfff] (8192 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.129477] pinctrl core: initialized pinctrl subsystem
+Oct  7 19:28:30 cambridge kernel: [    0.129691] regulator-dummy: no parameters
+Oct  7 19:28:30 cambridge kernel: [    0.129757] RTC time: 17:28:11, date: 10/07/14
+Oct  7 19:28:30 cambridge kernel: [    0.129939] NET: Registered protocol family 16
+Oct  7 19:28:30 cambridge kernel: [    0.130358] cpuidle: using governor ladder
+Oct  7 19:28:30 cambridge kernel: [    0.130365] cpuidle: using governor menu
+Oct  7 19:28:30 cambridge kernel: [    0.130492] ACPI: bus type PCI registered
+Oct  7 19:28:30 cambridge kernel: [    0.130497] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+Oct  7 19:28:30 cambridge kernel: [    0.130663] PCI: MMCONFIG for domain 0000 [bus 00-0c] at [mem 0xe0000000-0xe0cfffff] (base 0xe0000000)
+Oct  7 19:28:30 cambridge kernel: [    0.130669] PCI: MMCONFIG at [mem 0xe0000000-0xe0cfffff] reserved in E820
+Oct  7 19:28:30 cambridge kernel: [    0.130733] PCI: Using configuration type 1 for base access
+Oct  7 19:28:30 cambridge kernel: [    0.140236] ACPI: Added _OSI(Module Device)
+Oct  7 19:28:30 cambridge kernel: [    0.140242] ACPI: Added _OSI(Processor Device)
+Oct  7 19:28:30 cambridge kernel: [    0.140246] ACPI: Added _OSI(3.0 _SCP Extensions)
+Oct  7 19:28:30 cambridge kernel: [    0.140250] ACPI: Added _OSI(Processor Aggregator Device)
+Oct  7 19:28:30 cambridge kernel: [    0.150689] [Firmware Bug]: ACPI: BIOS _OSI(Linux) query ignored
+Oct  7 19:28:30 cambridge kernel: [    0.156487] ACPI: Dynamic OEM Table Load:
+Oct  7 19:28:30 cambridge kernel: [    0.156504] ACPI: SSDT 0xFFFF8800AF413800 0002E6 (v01 PmRef  Cpu0Ist  00003000 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.157885] ACPI: Dynamic OEM Table Load:
+Oct  7 19:28:30 cambridge kernel: [    0.157901] ACPI: SSDT 0xFFFF8800AB57E000 0006ED (v01 PmRef  Cpu0Cst  00003001 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.159289] ACPI: Dynamic OEM Table Load:
+Oct  7 19:28:30 cambridge kernel: [    0.159303] ACPI: SSDT 0xFFFF8800AF413C00 000202 (v01 PmRef  Cpu1Ist  00003000 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.160125] ACPI: Dynamic OEM Table Load:
+Oct  7 19:28:30 cambridge kernel: [    0.160137] ACPI: SSDT 0xFFFF8800AB0410C0 000085 (v01 PmRef  Cpu1Cst  00003000 INTL 20050228)
+Oct  7 19:28:30 cambridge kernel: [    0.164065] ACPI: Interpreter enabled
+Oct  7 19:28:30 cambridge kernel: [    0.164082] ACPI Exception: AE_NOT_FOUND, While evaluating Sleep State [\_S1_] (20140724/hwxface-580)
+Oct  7 19:28:30 cambridge kernel: [    0.164092] ACPI Exception: AE_NOT_FOUND, While evaluating Sleep State [\_S2_] (20140724/hwxface-580)
+Oct  7 19:28:30 cambridge kernel: [    0.164124] ACPI: (supports S0 S3 S4 S5)
+Oct  7 19:28:30 cambridge kernel: [    0.164128] ACPI: Using IOAPIC for interrupt routing
+Oct  7 19:28:30 cambridge kernel: [    0.164260] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+Oct  7 19:28:30 cambridge kernel: [    0.165111] [Firmware Bug]: ACPI: No _BQC method, cannot determine initial brightness
+Oct  7 19:28:30 cambridge kernel: [    0.177343] [Firmware Bug]: ACPI: No _BQC method, cannot determine initial brightness
+Oct  7 19:28:30 cambridge kernel: [    0.177829] ACPI: Power Resource [FN00] (off)
+Oct  7 19:28:30 cambridge kernel: [    0.180034] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+Oct  7 19:28:30 cambridge kernel: [    0.180049] acpi PNP0A08:00: _OSC: OS supports [ExtendedConfig ASPM ClockPM Segments MSI]
+Oct  7 19:28:30 cambridge kernel: [    0.180061] acpi PNP0A08:00: _OSC failed (AE_NOT_FOUND); disabling ASPM
+Oct  7 19:28:30 cambridge kernel: [    0.181870] acpi PNP0A08:00: [Firmware Info]: MMCONFIG for domain 0000 [bus 00-0c] only partially covers this bridge
+Oct  7 19:28:30 cambridge kernel: [    0.182207] PCI host bridge to bus 0000:00
+Oct  7 19:28:30 cambridge kernel: [    0.182215] pci_bus 0000:00: root bus resource [bus 00-ff]
+Oct  7 19:28:30 cambridge kernel: [    0.182220] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff]
+Oct  7 19:28:30 cambridge kernel: [    0.182225] pci_bus 0000:00: root bus resource [mem 0x000d0000-0x000d3fff]
+Oct  7 19:28:30 cambridge kernel: [    0.182230] pci_bus 0000:00: root bus resource [mem 0x000d4000-0x000d7fff]
+Oct  7 19:28:30 cambridge kernel: [    0.182235] pci_bus 0000:00: root bus resource [mem 0x000d8000-0x000dbfff]
+Oct  7 19:28:30 cambridge kernel: [    0.182240] pci_bus 0000:00: root bus resource [mem 0xb0000000-0xdfffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.182245] pci_bus 0000:00: root bus resource [mem 0xf0000000-0xffffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.182250] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7]
+Oct  7 19:28:30 cambridge kernel: [    0.182255] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff]
+Oct  7 19:28:30 cambridge kernel: [    0.182271] pci 0000:00:00.0: [1002:7930] type 00 class 0x060000
+Oct  7 19:28:30 cambridge kernel: [    0.182471] pci 0000:00:01.0: [1002:7932] type 01 class 0x060400
+Oct  7 19:28:30 cambridge kernel: [    0.182698] pci 0000:00:05.0: [1002:7935] type 01 class 0x060400
+Oct  7 19:28:30 cambridge kernel: [    0.182801] pci 0000:00:05.0: PME# supported from D0 D3hot D3cold
+Oct  7 19:28:30 cambridge kernel: [    0.182886] pci 0000:00:05.0: System wakeup disabled by ACPI
+Oct  7 19:28:30 cambridge kernel: [    0.183004] pci 0000:00:06.0: [1002:7936] type 01 class 0x060400
+Oct  7 19:28:30 cambridge kernel: [    0.183105] pci 0000:00:06.0: PME# supported from D0 D3hot D3cold
+Oct  7 19:28:30 cambridge kernel: [    0.183188] pci 0000:00:06.0: System wakeup disabled by ACPI
+Oct  7 19:28:30 cambridge kernel: [    0.183301] pci 0000:00:07.0: [1002:7937] type 01 class 0x060400
+Oct  7 19:28:30 cambridge kernel: [    0.183395] pci 0000:00:07.0: PME# supported from D0 D3hot D3cold
+Oct  7 19:28:30 cambridge kernel: [    0.183482] pci 0000:00:07.0: System wakeup disabled by ACPI
+Oct  7 19:28:30 cambridge kernel: [    0.183623] pci 0000:00:12.0: [1002:4380] type 00 class 0x01018f
+Oct  7 19:28:30 cambridge kernel: [    0.183657] pci 0000:00:12.0: reg 0x10: [io  0x8438-0x843f]
+Oct  7 19:28:30 cambridge kernel: [    0.183676] pci 0000:00:12.0: reg 0x14: [io  0x8444-0x8447]
+Oct  7 19:28:30 cambridge kernel: [    0.183695] pci 0000:00:12.0: reg 0x18: [io  0x8430-0x8437]
+Oct  7 19:28:30 cambridge kernel: [    0.183714] pci 0000:00:12.0: reg 0x1c: [io  0x8440-0x8443]
+Oct  7 19:28:30 cambridge kernel: [    0.183732] pci 0000:00:12.0: reg 0x20: [io  0x8400-0x840f]
+Oct  7 19:28:30 cambridge kernel: [    0.183751] pci 0000:00:12.0: reg 0x24: [mem 0xd0509000-0xd05093ff]
+Oct  7 19:28:30 cambridge kernel: [    0.183789] pci 0000:00:12.0: set SATA to AHCI mode
+Oct  7 19:28:30 cambridge kernel: [    0.183991] pci 0000:00:13.0: [1002:4387] type 00 class 0x0c0310
+Oct  7 19:28:30 cambridge kernel: [    0.184028] pci 0000:00:13.0: reg 0x10: [mem 0xd0304000-0xd0304fff]
+Oct  7 19:28:30 cambridge kernel: [    0.184200] pci 0000:00:13.0: System wakeup disabled by ACPI
+Oct  7 19:28:30 cambridge kernel: [    0.184313] pci 0000:00:13.1: [1002:4388] type 00 class 0x0c0310
+Oct  7 19:28:30 cambridge kernel: [    0.184339] pci 0000:00:13.1: reg 0x10: [mem 0xd0305000-0xd0305fff]
+Oct  7 19:28:30 cambridge kernel: [    0.184594] pci 0000:00:13.2: [1002:4389] type 00 class 0x0c0310
+Oct  7 19:28:30 cambridge kernel: [    0.184621] pci 0000:00:13.2: reg 0x10: [mem 0xd0306000-0xd0306fff]
+Oct  7 19:28:30 cambridge kernel: [    0.184873] pci 0000:00:13.3: [1002:438a] type 00 class 0x0c0310
+Oct  7 19:28:30 cambridge kernel: [    0.184899] pci 0000:00:13.3: reg 0x10: [mem 0xd0307000-0xd0307fff]
+Oct  7 19:28:30 cambridge kernel: [    0.185152] pci 0000:00:13.4: [1002:438b] type 00 class 0x0c0310
+Oct  7 19:28:30 cambridge kernel: [    0.185178] pci 0000:00:13.4: reg 0x10: [mem 0xd0308000-0xd0308fff]
+Oct  7 19:28:30 cambridge kernel: [    0.185344] pci 0000:00:13.4: System wakeup disabled by ACPI
+Oct  7 19:28:30 cambridge kernel: [    0.185468] pci 0000:00:13.5: [1002:4386] type 00 class 0x0c0320
+Oct  7 19:28:30 cambridge kernel: [    0.185504] pci 0000:00:13.5: reg 0x10: [mem 0xd0509400-0xd05094ff]
+Oct  7 19:28:30 cambridge kernel: [    0.185652] pci 0000:00:13.5: supports D1 D2
+Oct  7 19:28:30 cambridge kernel: [    0.185658] pci 0000:00:13.5: PME# supported from D0 D1 D2 D3hot
+Oct  7 19:28:30 cambridge kernel: [    0.185740] pci 0000:00:13.5: System wakeup disabled by ACPI
+Oct  7 19:28:30 cambridge kernel: [    0.185862] pci 0000:00:14.0: [1002:4385] type 00 class 0x0c0500
+Oct  7 19:28:30 cambridge kernel: [    0.185895] pci 0000:00:14.0: reg 0x10: [io  0x8410-0x841f]
+Oct  7 19:28:30 cambridge kernel: [    0.186145] pci 0000:00:14.1: [1002:438c] type 00 class 0x01018a
+Oct  7 19:28:30 cambridge kernel: [    0.186172] pci 0000:00:14.1: reg 0x10: [io  0x01f0-0x01f7]
+Oct  7 19:28:30 cambridge kernel: [    0.186190] pci 0000:00:14.1: reg 0x14: [io  0x03f4-0x03f7]
+Oct  7 19:28:30 cambridge kernel: [    0.186209] pci 0000:00:14.1: reg 0x18: [io  0x0000-0x0007]
+Oct  7 19:28:30 cambridge kernel: [    0.186228] pci 0000:00:14.1: reg 0x1c: [io  0x0000-0x0003]
+Oct  7 19:28:30 cambridge kernel: [    0.186246] pci 0000:00:14.1: reg 0x20: [io  0x8420-0x842f]
+Oct  7 19:28:30 cambridge kernel: [    0.186284] pci 0000:00:14.1: legacy IDE quirk: reg 0x10: [io  0x01f0-0x01f7]
+Oct  7 19:28:30 cambridge kernel: [    0.186289] pci 0000:00:14.1: legacy IDE quirk: reg 0x14: [io  0x03f6]
+Oct  7 19:28:30 cambridge kernel: [    0.186294] pci 0000:00:14.1: legacy IDE quirk: reg 0x18: [io  0x0170-0x0177]
+Oct  7 19:28:30 cambridge kernel: [    0.186298] pci 0000:00:14.1: legacy IDE quirk: reg 0x1c: [io  0x0376]
+Oct  7 19:28:30 cambridge kernel: [    0.186472] pci 0000:00:14.2: [1002:4383] type 00 class 0x040300
+Oct  7 19:28:30 cambridge kernel: [    0.186513] pci 0000:00:14.2: reg 0x10: [mem 0xd0300000-0xd0303fff 64bit]
+Oct  7 19:28:30 cambridge kernel: [    0.186633] pci 0000:00:14.2: PME# supported from D0 D3hot D3cold
+Oct  7 19:28:30 cambridge kernel: [    0.186711] pci 0000:00:14.2: System wakeup disabled by ACPI
+Oct  7 19:28:30 cambridge kernel: [    0.186825] pci 0000:00:14.3: [1002:438d] type 00 class 0x060100
+Oct  7 19:28:30 cambridge kernel: [    0.187098] pci 0000:00:14.4: [1002:4384] type 01 class 0x060401
+Oct  7 19:28:30 cambridge kernel: [    0.187451] pci 0000:01:05.0: [1002:7942] type 00 class 0x030000
+Oct  7 19:28:30 cambridge kernel: [    0.187480] pci 0000:01:05.0: reg 0x10: [mem 0xc0000000-0xcfffffff 64bit pref]
+Oct  7 19:28:30 cambridge kernel: [    0.187498] pci 0000:01:05.0: reg 0x18: [mem 0xd0000000-0xd000ffff 64bit]
+Oct  7 19:28:30 cambridge kernel: [    0.187512] pci 0000:01:05.0: reg 0x20: [io  0x9000-0x90ff]
+Oct  7 19:28:30 cambridge kernel: [    0.187570] pci 0000:01:05.0: supports D1 D2
+Oct  7 19:28:30 cambridge kernel: [    0.187712] pci 0000:00:01.0: PCI bridge to [bus 01]
+Oct  7 19:28:30 cambridge kernel: [    0.187722] pci 0000:00:01.0:   bridge window [io  0x9000-0x9fff]
+Oct  7 19:28:30 cambridge kernel: [    0.187730] pci 0000:00:01.0:   bridge window [mem 0xd0000000-0xd00fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.187740] pci 0000:00:01.0:   bridge window [mem 0xc0000000-0xcfffffff 64bit pref]
+Oct  7 19:28:30 cambridge kernel: [    0.187873] pci 0000:02:00.0: [168c:001c] type 00 class 0x020000
+Oct  7 19:28:30 cambridge kernel: [    0.187908] pci 0000:02:00.0: reg 0x10: [mem 0xd0100000-0xd010ffff 64bit]
+Oct  7 19:28:30 cambridge kernel: [    0.188081] pci 0000:02:00.0: PME# supported from D3hot
+Oct  7 19:28:30 cambridge kernel: [    0.188219] pci 0000:02:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+Oct  7 19:28:30 cambridge kernel: [    0.188236] pci 0000:00:05.0: PCI bridge to [bus 02-04]
+Oct  7 19:28:30 cambridge kernel: [    0.188248] pci 0000:00:05.0:   bridge window [mem 0xd0100000-0xd01fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.188389] pci 0000:05:00.0: [11ab:4353] type 00 class 0x020000
+Oct  7 19:28:30 cambridge kernel: [    0.188425] pci 0000:05:00.0: reg 0x10: [mem 0xd0200000-0xd0203fff 64bit]
+Oct  7 19:28:30 cambridge kernel: [    0.188444] pci 0000:05:00.0: reg 0x18: [io  0xa000-0xa0ff]
+Oct  7 19:28:30 cambridge kernel: [    0.188592] pci 0000:05:00.0: supports D1 D2
+Oct  7 19:28:30 cambridge kernel: [    0.188597] pci 0000:05:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+Oct  7 19:28:30 cambridge kernel: [    0.188717] pci 0000:05:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+Oct  7 19:28:30 cambridge kernel: [    0.188732] pci 0000:00:06.0: PCI bridge to [bus 05-07]
+Oct  7 19:28:30 cambridge kernel: [    0.188742] pci 0000:00:06.0:   bridge window [io  0xa000-0xafff]
+Oct  7 19:28:30 cambridge kernel: [    0.188749] pci 0000:00:06.0:   bridge window [mem 0xd0200000-0xd02fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.188930] acpiphp: Slot [1] registered
+Oct  7 19:28:30 cambridge kernel: [    0.188942] pci 0000:00:07.0: PCI bridge to [bus 08-0a]
+Oct  7 19:28:30 cambridge kernel: [    0.188952] pci 0000:00:07.0:   bridge window [io  0x0000-0x0fff]
+Oct  7 19:28:30 cambridge kernel: [    0.188960] pci 0000:00:07.0:   bridge window [mem 0x00000000-0x000fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.189130] pci 0000:00:14.4: PCI bridge to [bus 0b-0d] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189148] pci 0000:00:14.4:   bridge window [mem 0x000a0000-0x000bffff] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189154] pci 0000:00:14.4:   bridge window [mem 0x000d0000-0x000d3fff] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189159] pci 0000:00:14.4:   bridge window [mem 0x000d4000-0x000d7fff] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189164] pci 0000:00:14.4:   bridge window [mem 0x000d8000-0x000dbfff] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189170] pci 0000:00:14.4:   bridge window [mem 0xb0000000-0xdfffffff] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189175] pci 0000:00:14.4:   bridge window [mem 0xf0000000-0xffffffff] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189180] pci 0000:00:14.4:   bridge window [io  0x0000-0x0cf7] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189185] pci 0000:00:14.4:   bridge window [io  0x0d00-0xffff] (subtractive decode)
+Oct  7 19:28:30 cambridge kernel: [    0.189818] ACPI: PCI Interrupt Link [LNKA] (IRQs 11) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.189938] ACPI: PCI Interrupt Link [LNKB] (IRQs 10) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.190054] ACPI: PCI Interrupt Link [LNKC] (IRQs 5) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.190168] ACPI: PCI Interrupt Link [LNKD] (IRQs 5) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.190282] ACPI: PCI Interrupt Link [LNKE] (IRQs 11) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.190395] ACPI: PCI Interrupt Link [LNKF] (IRQs 10) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.190508] ACPI: PCI Interrupt Link [LNKG] (IRQs 11) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.190622] ACPI: PCI Interrupt Link [LNKH] (IRQs 5) *0, disabled.
+Oct  7 19:28:30 cambridge kernel: [    0.191865] ACPI: Enabled 2 GPEs in block 00 to 1F
+Oct  7 19:28:30 cambridge kernel: [    0.192025] ACPI : EC: GPE = 0x3, I/O: command/status = 0x66, data = 0x62
+Oct  7 19:28:30 cambridge kernel: [    0.192036] ACPI : EC: 0 stale EC events cleared
+Oct  7 19:28:30 cambridge kernel: [    0.192297] vgaarb: setting as boot device: PCI:0000:01:05.0
+Oct  7 19:28:30 cambridge kernel: [    0.192297] vgaarb: device added: PCI:0000:01:05.0,decodes=io+mem,owns=io+mem,locks=none
+Oct  7 19:28:30 cambridge kernel: [    0.192297] vgaarb: loaded
+Oct  7 19:28:30 cambridge kernel: [    0.192297] vgaarb: bridge control possible 0000:01:05.0
+Oct  7 19:28:30 cambridge kernel: [    0.192715] SCSI subsystem initialized
+Oct  7 19:28:30 cambridge kernel: [    0.192793] libata version 3.00 loaded.
+Oct  7 19:28:30 cambridge kernel: [    0.192793] ACPI: bus type USB registered
+Oct  7 19:28:30 cambridge kernel: [    0.192793] usbcore: registered new interface driver usbfs
+Oct  7 19:28:30 cambridge kernel: [    0.192793] usbcore: registered new interface driver hub
+Oct  7 19:28:30 cambridge kernel: [    0.192793] usbcore: registered new device driver usb
+Oct  7 19:28:30 cambridge kernel: [    0.192793] PCI: Using ACPI for IRQ routing
+Oct  7 19:28:30 cambridge kernel: [    0.192793] PCI: pci_cache_line_size set to 64 bytes
+Oct  7 19:28:30 cambridge kernel: [    0.192793] e820: reserve RAM buffer [mem 0x0009dc00-0x0009ffff]
+Oct  7 19:28:30 cambridge kernel: [    0.192793] e820: reserve RAM buffer [mem 0xafe90000-0xafffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.192810] NetLabel: Initializing
+Oct  7 19:28:30 cambridge kernel: [    0.192814] NetLabel:  domain hash size = 128
+Oct  7 19:28:30 cambridge kernel: [    0.192817] NetLabel:  protocols = UNLABELED CIPSOv4
+Oct  7 19:28:30 cambridge kernel: [    0.192852] NetLabel:  unlabeled traffic allowed by default
+Oct  7 19:28:30 cambridge kernel: [    0.192887] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
+Oct  7 19:28:30 cambridge kernel: [    0.192887] hpet0: 4 comparators, 32-bit 14.318180 MHz counter
+Oct  7 19:28:30 cambridge kernel: [    0.196006] Switched to clocksource hpet
+Oct  7 19:28:30 cambridge kernel: [    0.215809] AppArmor: AppArmor Filesystem Enabled
+Oct  7 19:28:30 cambridge kernel: [    0.215901] pnp: PnP ACPI init
+Oct  7 19:28:30 cambridge kernel: [    0.216823] system 00:00: [mem 0xfec00000-0xfec00fff] could not be reserved
+Oct  7 19:28:30 cambridge kernel: [    0.216832] system 00:00: [mem 0xfee00000-0xfee00fff] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.216842] system 00:00: Plug and Play ACPI device, IDs PNP0c02 (active)
+Oct  7 19:28:30 cambridge kernel: [    0.217714] pnp 00:01: Plug and Play ACPI device, IDs PNP0b00 (active)
+Oct  7 19:28:30 cambridge kernel: [    0.217815] pnp 00:02: Plug and Play ACPI device, IDs PNP0303 (active)
+Oct  7 19:28:30 cambridge kernel: [    0.217899] pnp 00:03: Plug and Play ACPI device, IDs PNP0f13 (active)
+Oct  7 19:28:30 cambridge kernel: [    0.218069] system 00:04: [io  0x1080] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218077] system 00:04: [io  0x0220-0x022f] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218083] system 00:04: [io  0x040b] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218089] system 00:04: [io  0x04d0-0x04d1] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218094] system 00:04: [io  0x04d6] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218100] system 00:04: [io  0x0530-0x0537] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218105] system 00:04: [io  0x0c00-0x0c01] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218111] system 00:04: [io  0x0c14] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218117] system 00:04: [io  0x0c50-0x0c52] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218123] system 00:04: [io  0x0c6c] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218129] system 00:04: [io  0x0c6f] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218134] system 00:04: [io  0x0cd0-0x0cd1] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218140] system 00:04: [io  0x0cd2-0x0cd3] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218145] system 00:04: [io  0x0cd4-0x0cd5] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218151] system 00:04: [io  0x0cd6-0x0cd7] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218156] system 00:04: [io  0x0cd8-0x0cdf] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218162] system 00:04: [io  0x8000-0x805f] could not be reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218168] system 00:04: [io  0x8100-0x81ff window] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218174] system 00:04: [io  0x8210-0x821f] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218180] system 00:04: [io  0x0f40-0x0f47] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218185] system 00:04: [io  0x0280-0x0293] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218191] system 00:04: [io  0x087f] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218199] system 00:04: Plug and Play ACPI device, IDs PNP0c02 (active)
+Oct  7 19:28:30 cambridge kernel: [    0.218394] system 00:05: [mem 0x000e0000-0x000fffff] could not be reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218402] system 00:05: [mem 0xffb83020-0xffb8401f] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218408] system 00:05: [mem 0xfff00000-0xffffffff] has been reserved
+Oct  7 19:28:30 cambridge kernel: [    0.218415] system 00:05: Plug and Play ACPI device, IDs PNP0c01 (active)
+Oct  7 19:28:30 cambridge kernel: [    0.218598] pnp: PnP ACPI: found 6 devices
+Oct  7 19:28:30 cambridge kernel: [    0.229206] pci 0000:00:01.0: PCI bridge to [bus 01]
+Oct  7 19:28:30 cambridge kernel: [    0.229216] pci 0000:00:01.0:   bridge window [io  0x9000-0x9fff]
+Oct  7 19:28:30 cambridge kernel: [    0.229225] pci 0000:00:01.0:   bridge window [mem 0xd0000000-0xd00fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229233] pci 0000:00:01.0:   bridge window [mem 0xc0000000-0xcfffffff 64bit pref]
+Oct  7 19:28:30 cambridge kernel: [    0.229243] pci 0000:00:05.0: PCI bridge to [bus 02-04]
+Oct  7 19:28:30 cambridge kernel: [    0.229251] pci 0000:00:05.0:   bridge window [mem 0xd0100000-0xd01fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229263] pci 0000:00:06.0: PCI bridge to [bus 05-07]
+Oct  7 19:28:30 cambridge kernel: [    0.229269] pci 0000:00:06.0:   bridge window [io  0xa000-0xafff]
+Oct  7 19:28:30 cambridge kernel: [    0.229278] pci 0000:00:06.0:   bridge window [mem 0xd0200000-0xd02fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229289] pci 0000:00:07.0: PCI bridge to [bus 08-0a]
+Oct  7 19:28:30 cambridge kernel: [    0.229305] pci 0000:00:14.4: PCI bridge to [bus 0b-0d]
+Oct  7 19:28:30 cambridge kernel: [    0.229331] pci_bus 0000:00: resource 4 [mem 0x000a0000-0x000bffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229337] pci_bus 0000:00: resource 5 [mem 0x000d0000-0x000d3fff]
+Oct  7 19:28:30 cambridge kernel: [    0.229342] pci_bus 0000:00: resource 6 [mem 0x000d4000-0x000d7fff]
+Oct  7 19:28:30 cambridge kernel: [    0.229347] pci_bus 0000:00: resource 7 [mem 0x000d8000-0x000dbfff]
+Oct  7 19:28:30 cambridge kernel: [    0.229352] pci_bus 0000:00: resource 8 [mem 0xb0000000-0xdfffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229357] pci_bus 0000:00: resource 9 [mem 0xf0000000-0xffffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229362] pci_bus 0000:00: resource 10 [io  0x0000-0x0cf7]
+Oct  7 19:28:30 cambridge kernel: [    0.229367] pci_bus 0000:00: resource 11 [io  0x0d00-0xffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229373] pci_bus 0000:01: resource 0 [io  0x9000-0x9fff]
+Oct  7 19:28:30 cambridge kernel: [    0.229378] pci_bus 0000:01: resource 1 [mem 0xd0000000-0xd00fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229383] pci_bus 0000:01: resource 2 [mem 0xc0000000-0xcfffffff 64bit pref]
+Oct  7 19:28:30 cambridge kernel: [    0.229389] pci_bus 0000:02: resource 1 [mem 0xd0100000-0xd01fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229394] pci_bus 0000:05: resource 0 [io  0xa000-0xafff]
+Oct  7 19:28:30 cambridge kernel: [    0.229399] pci_bus 0000:05: resource 1 [mem 0xd0200000-0xd02fffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229405] pci_bus 0000:0b: resource 4 [mem 0x000a0000-0x000bffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229410] pci_bus 0000:0b: resource 5 [mem 0x000d0000-0x000d3fff]
+Oct  7 19:28:30 cambridge kernel: [    0.229414] pci_bus 0000:0b: resource 6 [mem 0x000d4000-0x000d7fff]
+Oct  7 19:28:30 cambridge kernel: [    0.229419] pci_bus 0000:0b: resource 7 [mem 0x000d8000-0x000dbfff]
+Oct  7 19:28:30 cambridge kernel: [    0.229424] pci_bus 0000:0b: resource 8 [mem 0xb0000000-0xdfffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229429] pci_bus 0000:0b: resource 9 [mem 0xf0000000-0xffffffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229434] pci_bus 0000:0b: resource 10 [io  0x0000-0x0cf7]
+Oct  7 19:28:30 cambridge kernel: [    0.229439] pci_bus 0000:0b: resource 11 [io  0x0d00-0xffff]
+Oct  7 19:28:30 cambridge kernel: [    0.229505] NET: Registered protocol family 2
+Oct  7 19:28:30 cambridge kernel: [    0.229919] TCP established hash table entries: 32768 (order: 6, 262144 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.230197] TCP bind hash table entries: 32768 (order: 7, 524288 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.230527] TCP: Hash tables configured (established 32768 bind 32768)
+Oct  7 19:28:30 cambridge kernel: [    0.230610] TCP: reno registered
+Oct  7 19:28:30 cambridge kernel: [    0.230630] UDP hash table entries: 2048 (order: 4, 65536 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.230687] UDP-Lite hash table entries: 2048 (order: 4, 65536 bytes)
+Oct  7 19:28:30 cambridge kernel: [    0.230824] NET: Registered protocol family 1
+Oct  7 19:28:30 cambridge kernel: [    0.232485] pci 0000:01:05.0: Video device with shadowed ROM
+Oct  7 19:28:30 cambridge kernel: [    0.232501] PCI: CLS 32 bytes, default 64
+Oct  7 19:28:30 cambridge kernel: [    0.232648] Trying to unpack rootfs image as initramfs...
+Oct  7 19:28:30 cambridge kernel: [    1.155993] Freeing initrd memory: 19732K (ffff880035966000 - ffff880036cab000)
+Oct  7 19:28:30 cambridge kernel: [    1.156707] Scanning for low memory corruption every 60 seconds
+Oct  7 19:28:30 cambridge kernel: [    1.157532] futex hash table entries: 512 (order: 3, 32768 bytes)
+Oct  7 19:28:30 cambridge kernel: [    1.157580] Initialise system trusted keyring
+Oct  7 19:28:30 cambridge kernel: [    1.157637] audit: initializing netlink subsys (disabled)
+Oct  7 19:28:30 cambridge kernel: [    1.157687] audit: type=2000 audit(1412702891.156:1): initialized
+Oct  7 19:28:30 cambridge kernel: [    1.158486] HugeTLB registered 2 MB page size, pre-allocated 0 pages
+Oct  7 19:28:30 cambridge kernel: [    1.163196] zpool: loaded
+Oct  7 19:28:30 cambridge kernel: [    1.163204] zbud: loaded
+Oct  7 19:28:30 cambridge kernel: [    1.163567] VFS: Disk quotas dquot_6.5.2
+Oct  7 19:28:30 cambridge kernel: [    1.163673] Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+Oct  7 19:28:30 cambridge kernel: [    1.165320] fuse init (API version 7.23)
+Oct  7 19:28:30 cambridge kernel: [    1.165589] msgmni has been set to 5507
+Oct  7 19:28:30 cambridge kernel: [    1.166587] Key type asymmetric registered
+Oct  7 19:28:30 cambridge kernel: [    1.166594] Asymmetric key parser 'x509' registered
+Oct  7 19:28:30 cambridge kernel: [    1.166644] bounce: pool size: 64 pages
+Oct  7 19:28:30 cambridge kernel: [    1.166742] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 252)
+Oct  7 19:28:30 cambridge kernel: [    1.166823] io scheduler noop registered
+Oct  7 19:28:30 cambridge kernel: [    1.166830] io scheduler deadline registered (default)
+Oct  7 19:28:30 cambridge kernel: [    1.166925] io scheduler cfq registered
+Oct  7 19:28:30 cambridge kernel: [    1.167150] pcieport 0000:00:05.0: irq 24 for MSI/MSI-X
+Oct  7 19:28:30 cambridge kernel: [    1.167291] pcieport 0000:00:06.0: irq 25 for MSI/MSI-X
+Oct  7 19:28:30 cambridge kernel: [    1.167427] pcieport 0000:00:07.0: irq 26 for MSI/MSI-X
+Oct  7 19:28:30 cambridge kernel: [    1.167619] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+Oct  7 19:28:30 cambridge kernel: [    1.167666] pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+Oct  7 19:28:30 cambridge kernel: [    1.167924] efifb: probing for efifb
+Oct  7 19:28:30 cambridge kernel: [    1.167937] efifb: framebuffer at 0xa6d60, mapped to 0xffff8800000a6d60, using 56k, total 64k
+Oct  7 19:28:30 cambridge kernel: [    1.167942] efifb: mode is 640x350x1, linelength=80, pages=1
+Oct  7 19:28:30 cambridge kernel: [    1.167944] efifb: scrolling: redraw
+Oct  7 19:28:30 cambridge kernel: [    1.167949] efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
+Oct  7 19:28:30 cambridge kernel: [    1.169972] Console: switching to colour frame buffer device 80x43
+Oct  7 19:28:30 cambridge kernel: [    1.171761] fb0: EFI VGA frame buffer device
+Oct  7 19:28:30 cambridge kernel: [    1.171784] intel_idle: does not run on family 6 model 15
+Oct  7 19:28:30 cambridge kernel: [    1.172329] ACPI: AC Adapter [ADP1] (on-line)
+Oct  7 19:28:30 cambridge kernel: [    1.172704] input: Power Button as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0C:00/input/input0
+Oct  7 19:28:30 cambridge kernel: [    1.172799] ACPI: Power Button [PWRB]
+Oct  7 19:28:30 cambridge kernel: [    1.172923] input: Lid Switch as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0D:00/input/input1
+Oct  7 19:28:30 cambridge kernel: [    1.172951] ACPI: Lid Switch [LID0]
+Oct  7 19:28:30 cambridge kernel: [    1.173069] input: Sleep Button as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0E:00/input/input2
+Oct  7 19:28:30 cambridge kernel: [    1.173076] ACPI: Sleep Button [SLPB]
+Oct  7 19:28:30 cambridge kernel: [    1.173216] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input3
+Oct  7 19:28:30 cambridge kernel: [    1.173222] ACPI: Power Button [PWRF]
+Oct  7 19:28:30 cambridge kernel: [    1.173372] ACPI: Fan [FAN0] (off)
+Oct  7 19:28:30 cambridge kernel: [    1.176054] Monitor-Mwait will be used to enter C-1 state
+Oct  7 19:28:30 cambridge kernel: [    1.176066] Monitor-Mwait will be used to enter C-2 state
+Oct  7 19:28:30 cambridge kernel: [    1.176075] tsc: Marking TSC unstable due to TSC halts in idle
+Oct  7 19:28:30 cambridge kernel: [    1.176083] ACPI: acpi_idle registered with cpuidle
+Oct  7 19:28:30 cambridge kernel: [    1.178365] thermal LNXTHERM:00: registered as thermal_zone0
+Oct  7 19:28:30 cambridge kernel: [    1.178371] ACPI: Thermal Zone [TZ00] (68 C)
+Oct  7 19:28:30 cambridge kernel: [    1.179328] thermal LNXTHERM:01: registered as thermal_zone1
+Oct  7 19:28:30 cambridge kernel: [    1.179333] ACPI: Thermal Zone [TZ01] (68 C)
+Oct  7 19:28:30 cambridge kernel: [    1.179427] GHES: HEST is not enabled!
+Oct  7 19:28:30 cambridge kernel: [    1.179566] ACPI: Battery Slot [BAT1] (battery absent)
+Oct  7 19:28:30 cambridge kernel: [    1.179736] Serial: 8250/16550 driver, 32 ports, IRQ sharing enabled
+Oct  7 19:28:30 cambridge kernel: [    1.184633] Linux agpgart interface v0.103
+Oct  7 19:28:30 cambridge kernel: [    1.188641] brd: module loaded
+Oct  7 19:28:30 cambridge kernel: [    1.190639] loop: module loaded
+Oct  7 19:28:30 cambridge kernel: [    1.191939] libphy: Fixed MDIO Bus: probed
+Oct  7 19:28:30 cambridge kernel: [    1.192306] tun: Universal TUN/TAP device driver, 1.6
+Oct  7 19:28:30 cambridge kernel: [    1.192310] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+Oct  7 19:28:30 cambridge kernel: [    1.192431] PPP generic driver version 2.4.2
+Oct  7 19:28:30 cambridge kernel: [    1.192564] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+Oct  7 19:28:30 cambridge kernel: [    1.192578] ehci-pci: EHCI PCI platform driver
+Oct  7 19:28:30 cambridge kernel: [    1.192823] ehci-pci 0000:00:13.5: EHCI Host Controller
+Oct  7 19:28:30 cambridge kernel: [    1.192840] ehci-pci 0000:00:13.5: new USB bus registered, assigned bus number 1
+Oct  7 19:28:30 cambridge kernel: [    1.192851] ehci-pci 0000:00:13.5: applying AMD SB600/SB700 USB freeze workaround
+Oct  7 19:28:30 cambridge kernel: [    1.192879] ehci-pci 0000:00:13.5: debug port 1
+Oct  7 19:28:30 cambridge kernel: [    1.192957] ehci-pci 0000:00:13.5: irq 19, io mem 0xd0509400
+Oct  7 19:28:30 cambridge kernel: [    1.204043] ehci-pci 0000:00:13.5: USB 2.0 started, EHCI 1.00
+Oct  7 19:28:30 cambridge kernel: [    1.204180] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
+Oct  7 19:28:30 cambridge kernel: [    1.204187] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Oct  7 19:28:30 cambridge kernel: [    1.204192] usb usb1: Product: EHCI Host Controller
+Oct  7 19:28:30 cambridge kernel: [    1.204197] usb usb1: Manufacturer: Linux 3.17.0 ehci_hcd
+Oct  7 19:28:30 cambridge kernel: [    1.204202] usb usb1: SerialNumber: 0000:00:13.5
+Oct  7 19:28:30 cambridge kernel: [    1.204511] hub 1-0:1.0: USB hub found
+Oct  7 19:28:30 cambridge kernel: [    1.204530] hub 1-0:1.0: 10 ports detected
+Oct  7 19:28:30 cambridge kernel: [    1.205109] ehci-platform: EHCI generic platform driver
+Oct  7 19:28:30 cambridge kernel: [    1.205140] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+Oct  7 19:28:30 cambridge kernel: [    1.205152] ohci-pci: OHCI PCI platform driver
+Oct  7 19:28:30 cambridge kernel: [    1.205334] ohci-pci 0000:00:13.0: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.205348] ohci-pci 0000:00:13.0: new USB bus registered, assigned bus number 2
+Oct  7 19:28:30 cambridge kernel: [    1.205400] ohci-pci 0000:00:13.0: irq 16, io mem 0xd0304000
+Oct  7 19:28:30 cambridge kernel: [    1.260158] usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
+Oct  7 19:28:30 cambridge kernel: [    1.260164] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Oct  7 19:28:30 cambridge kernel: [    1.260169] usb usb2: Product: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.260174] usb usb2: Manufacturer: Linux 3.17.0 ohci_hcd
+Oct  7 19:28:30 cambridge kernel: [    1.260179] usb usb2: SerialNumber: 0000:00:13.0
+Oct  7 19:28:30 cambridge kernel: [    1.260457] hub 2-0:1.0: USB hub found
+Oct  7 19:28:30 cambridge kernel: [    1.260489] hub 2-0:1.0: 2 ports detected
+Oct  7 19:28:30 cambridge kernel: [    1.260873] ohci-pci 0000:00:13.1: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.260888] ohci-pci 0000:00:13.1: new USB bus registered, assigned bus number 3
+Oct  7 19:28:30 cambridge kernel: [    1.260941] ohci-pci 0000:00:13.1: irq 17, io mem 0xd0305000
+Oct  7 19:28:30 cambridge kernel: [    1.316158] usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
+Oct  7 19:28:30 cambridge kernel: [    1.316165] usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Oct  7 19:28:30 cambridge kernel: [    1.316170] usb usb3: Product: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.316175] usb usb3: Manufacturer: Linux 3.17.0 ohci_hcd
+Oct  7 19:28:30 cambridge kernel: [    1.316180] usb usb3: SerialNumber: 0000:00:13.1
+Oct  7 19:28:30 cambridge kernel: [    1.316472] hub 3-0:1.0: USB hub found
+Oct  7 19:28:30 cambridge kernel: [    1.316495] hub 3-0:1.0: 2 ports detected
+Oct  7 19:28:30 cambridge kernel: [    1.316871] ohci-pci 0000:00:13.2: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.316887] ohci-pci 0000:00:13.2: new USB bus registered, assigned bus number 4
+Oct  7 19:28:30 cambridge kernel: [    1.316947] ohci-pci 0000:00:13.2: irq 18, io mem 0xd0306000
+Oct  7 19:28:30 cambridge kernel: [    1.372146] usb usb4: New USB device found, idVendor=1d6b, idProduct=0001
+Oct  7 19:28:30 cambridge kernel: [    1.372153] usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Oct  7 19:28:30 cambridge kernel: [    1.372158] usb usb4: Product: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.372163] usb usb4: Manufacturer: Linux 3.17.0 ohci_hcd
+Oct  7 19:28:30 cambridge kernel: [    1.372168] usb usb4: SerialNumber: 0000:00:13.2
+Oct  7 19:28:30 cambridge kernel: [    1.372452] hub 4-0:1.0: USB hub found
+Oct  7 19:28:30 cambridge kernel: [    1.372475] hub 4-0:1.0: 2 ports detected
+Oct  7 19:28:30 cambridge kernel: [    1.372855] ohci-pci 0000:00:13.3: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.372870] ohci-pci 0000:00:13.3: new USB bus registered, assigned bus number 5
+Oct  7 19:28:30 cambridge kernel: [    1.372905] ohci-pci 0000:00:13.3: irq 17, io mem 0xd0307000
+Oct  7 19:28:30 cambridge kernel: [    1.428150] usb usb5: New USB device found, idVendor=1d6b, idProduct=0001
+Oct  7 19:28:30 cambridge kernel: [    1.428157] usb usb5: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Oct  7 19:28:30 cambridge kernel: [    1.428162] usb usb5: Product: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.428167] usb usb5: Manufacturer: Linux 3.17.0 ohci_hcd
+Oct  7 19:28:30 cambridge kernel: [    1.428172] usb usb5: SerialNumber: 0000:00:13.3
+Oct  7 19:28:30 cambridge kernel: [    1.428473] hub 5-0:1.0: USB hub found
+Oct  7 19:28:30 cambridge kernel: [    1.428497] hub 5-0:1.0: 2 ports detected
+Oct  7 19:28:30 cambridge kernel: [    1.428880] ohci-pci 0000:00:13.4: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.428895] ohci-pci 0000:00:13.4: new USB bus registered, assigned bus number 6
+Oct  7 19:28:30 cambridge kernel: [    1.428934] ohci-pci 0000:00:13.4: irq 18, io mem 0xd0308000
+Oct  7 19:28:30 cambridge kernel: [    1.484144] usb usb6: New USB device found, idVendor=1d6b, idProduct=0001
+Oct  7 19:28:30 cambridge kernel: [    1.484151] usb usb6: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Oct  7 19:28:30 cambridge kernel: [    1.484156] usb usb6: Product: OHCI PCI host controller
+Oct  7 19:28:30 cambridge kernel: [    1.484162] usb usb6: Manufacturer: Linux 3.17.0 ohci_hcd
+Oct  7 19:28:30 cambridge kernel: [    1.484166] usb usb6: SerialNumber: 0000:00:13.4
+Oct  7 19:28:30 cambridge kernel: [    1.484465] hub 6-0:1.0: USB hub found
+Oct  7 19:28:30 cambridge kernel: [    1.484488] hub 6-0:1.0: 2 ports detected
+Oct  7 19:28:30 cambridge kernel: [    1.484741] ohci-platform: OHCI generic platform driver
+Oct  7 19:28:30 cambridge kernel: [    1.484774] uhci_hcd: USB Universal Host Controller Interface driver
+Oct  7 19:28:30 cambridge kernel: [    1.484948] i8042: PNP: PS/2 Controller [PNP0303:KBC0,PNP0f13:MSE0] at 0x60,0x64 irq 1,12
+Oct  7 19:28:30 cambridge kernel: [    1.488024] i8042: Detected active multiplexing controller, rev 1.1
+Oct  7 19:28:30 cambridge kernel: [    1.489821] serio: i8042 KBD port at 0x60,0x64 irq 1
+Oct  7 19:28:30 cambridge kernel: [    1.489832] serio: i8042 AUX0 port at 0x60,0x64 irq 12
+Oct  7 19:28:30 cambridge kernel: [    1.489913] serio: i8042 AUX1 port at 0x60,0x64 irq 12
+Oct  7 19:28:30 cambridge kernel: [    1.489984] serio: i8042 AUX2 port at 0x60,0x64 irq 12
+Oct  7 19:28:30 cambridge kernel: [    1.490050] serio: i8042 AUX3 port at 0x60,0x64 irq 12
+Oct  7 19:28:30 cambridge kernel: [    1.490407] mousedev: PS/2 mouse device common for all mice
+Oct  7 19:28:30 cambridge kernel: [    1.491219] rtc_cmos 00:01: rtc core: registered rtc_cmos as rtc0
+Oct  7 19:28:30 cambridge kernel: [    1.491263] rtc_cmos 00:01: alarms up to one month, 114 bytes nvram, hpet irqs
+Oct  7 19:28:30 cambridge kernel: [    1.491453] device-mapper: uevent: version 1.0.3
+Oct  7 19:28:30 cambridge kernel: [    1.491644] device-mapper: ioctl: 4.27.0-ioctl (2013-10-30) initialised: dm-devel@redhat.com
+Oct  7 19:28:30 cambridge kernel: [    1.491682] ledtrig-cpu: registered to indicate activity on CPUs
+Oct  7 19:28:30 cambridge kernel: [    1.491836] TCP: cubic registered
+Oct  7 19:28:30 cambridge kernel: [    1.492240] NET: Registered protocol family 10
+Oct  7 19:28:30 cambridge kernel: [    1.492876] NET: Registered protocol family 17
+Oct  7 19:28:30 cambridge kernel: [    1.492903] Key type dns_resolver registered
+Oct  7 19:28:30 cambridge kernel: [    1.493621] Loading compiled-in X.509 certificates
+Oct  7 19:28:30 cambridge kernel: [    1.496243] Loaded X.509 cert 'Magrathea: Glacier signing key: f9ee63f2b9b6c52727855c3ed75ab94484f73e7d'
+Oct  7 19:28:30 cambridge kernel: [    1.496282] registered taskstats version 1
+Oct  7 19:28:30 cambridge kernel: [    1.501071] Key type trusted registered
+Oct  7 19:28:30 cambridge kernel: [    1.505390] Key type encrypted registered
+Oct  7 19:28:30 cambridge kernel: [    1.509708] AppArmor: AppArmor sha1 policy hashing enabled
+Oct  7 19:28:30 cambridge kernel: [    1.509717] evm: HMAC attrs: 0x1
+Oct  7 19:28:30 cambridge kernel: [    1.510307]   Magic number: 2:280:491
+Oct  7 19:28:30 cambridge kernel: [    1.510511] rtc_cmos 00:01: setting system clock to 2014-10-07 17:28:13 UTC (1412702893)
+Oct  7 19:28:30 cambridge kernel: [    1.511657] BIOS EDD facility v0.16 2004-Jun-25, 0 devices found
+Oct  7 19:28:30 cambridge kernel: [    1.511660] EDD information not available.
+Oct  7 19:28:30 cambridge kernel: [    1.511762] PM: Hibernation image not present or could not be loaded.
+Oct  7 19:28:30 cambridge kernel: [    1.513903] Freeing unused kernel memory: 1348K (ffffffff81d26000 - ffffffff81e77000)
+Oct  7 19:28:30 cambridge kernel: [    1.513906] Write protecting the kernel read-only data: 12288k
+Oct  7 19:28:30 cambridge kernel: [    1.516067] usb 1-3: new high-speed USB device number 2 using ehci-pci
+Oct  7 19:28:30 cambridge kernel: [    1.517052] Freeing unused kernel memory: 748K (ffff880001745000 - ffff880001800000)
+Oct  7 19:28:30 cambridge kernel: [    1.518051] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input4
+Oct  7 19:28:30 cambridge kernel: [    1.519442] Freeing unused kernel memory: 580K (ffff880001b6f000 - ffff880001c00000)
+Oct  7 19:28:30 cambridge kernel: [    1.649554] sky2: driver version 1.30
+Oct  7 19:28:30 cambridge kernel: [    1.649734] sky2 0000:05:00.0: Yukon-2 FE chip revision 3
+Oct  7 19:28:30 cambridge kernel: [    1.649788] sky2 0000:05:00.0: irq 27 for MSI/MSI-X
+Oct  7 19:28:30 cambridge kernel: [    1.650097] sky2 0000:05:00.0 eth0: addr 00:13:77:99:fe:aa
+Oct  7 19:28:30 cambridge kernel: [    1.655179] scsi host0: pata_atiixp
+Oct  7 19:28:30 cambridge kernel: [    1.655358] scsi host1: pata_atiixp
+Oct  7 19:28:30 cambridge kernel: [    1.655434] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x8420 irq 14
+Oct  7 19:28:30 cambridge kernel: [    1.655438] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x8428 irq 15
+Oct  7 19:28:30 cambridge kernel: [    1.655498] ahci 0000:00:12.0: version 3.0
+Oct  7 19:28:30 cambridge kernel: [    1.655653] ahci 0000:00:12.0: controller can't do 64bit DMA, forcing 32bit
+Oct  7 19:28:30 cambridge kernel: [    1.655756] ahci 0000:00:12.0: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0xf impl SATA mode
+Oct  7 19:28:30 cambridge kernel: [    1.655760] ahci 0000:00:12.0: flags: ncq sntf ilck led clo pmp pio ccc 
+Oct  7 19:28:30 cambridge kernel: [    1.657110] scsi host2: ahci
+Oct  7 19:28:30 cambridge kernel: [    1.657270] scsi host3: ahci
+Oct  7 19:28:30 cambridge kernel: [    1.657417] scsi host4: ahci
+Oct  7 19:28:30 cambridge kernel: [    1.657564] scsi host5: ahci
+Oct  7 19:28:30 cambridge kernel: [    1.657647] ata3: SATA max UDMA/133 abar m1024@0xd0509000 port 0xd0509100 irq 22
+Oct  7 19:28:30 cambridge kernel: [    1.657651] ata4: SATA max UDMA/133 abar m1024@0xd0509000 port 0xd0509180 irq 22
+Oct  7 19:28:30 cambridge kernel: [    1.657654] ata5: SATA max UDMA/133 abar m1024@0xd0509000 port 0xd0509200 irq 22
+Oct  7 19:28:30 cambridge kernel: [    1.657658] ata6: SATA max UDMA/133 abar m1024@0xd0509000 port 0xd0509280 irq 22
+Oct  7 19:28:30 cambridge kernel: [    1.699441] usb 1-3: New USB device found, idVendor=0ac8, idProduct=c302
+Oct  7 19:28:30 cambridge kernel: [    1.699451] usb 1-3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+Oct  7 19:28:30 cambridge kernel: [    1.699457] usb 1-3: Product: Vega USB 2.0 Camera.
+Oct  7 19:28:30 cambridge kernel: [    1.699462] usb 1-3: Manufacturer: Vimicro Corp.
+Oct  7 19:28:30 cambridge kernel: [    1.844549] ata1.00: ATAPI: Slimtype DVD A DS8A1P, CS22, max UDMA/33
+Oct  7 19:28:30 cambridge kernel: [    1.884472] ata1.00: configured for UDMA/33
+Oct  7 19:28:30 cambridge kernel: [    1.888692] scsi 0:0:0:0: CD-ROM            Slimtype DVD A  DS8A1P    CS22 PQ: 0 ANSI: 5
+Oct  7 19:28:30 cambridge kernel: [    1.908074] sr 0:0:0:0: [sr0] scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw xa/form2 cdda tray
+Oct  7 19:28:30 cambridge kernel: [    1.908078] cdrom: Uniform CD-ROM driver Revision: 3.20
+Oct  7 19:28:30 cambridge kernel: [    1.908258] sr 0:0:0:0: Attached scsi CD-ROM sr0
+Oct  7 19:28:30 cambridge kernel: [    1.908382] sr 0:0:0:0: Attached scsi generic sg0 type 5
+Oct  7 19:28:30 cambridge kernel: [    1.976091] ata5: SATA link down (SStatus 0 SControl 300)
+Oct  7 19:28:30 cambridge kernel: [    1.976130] ata6: SATA link down (SStatus 0 SControl 300)
+Oct  7 19:28:30 cambridge kernel: [    1.976171] ata4: SATA link down (SStatus 0 SControl 300)
+Oct  7 19:28:30 cambridge kernel: [    2.148046] ata3: softreset failed (device not ready)
+Oct  7 19:28:30 cambridge kernel: [    2.148108] ata3: applying PMP SRST workaround and retrying
+Oct  7 19:28:30 cambridge kernel: [    2.320053] ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+Oct  7 19:28:30 cambridge kernel: [    2.326065] ata3.00: ATA-8: SAMSUNG HM160HI, HH100-06, max UDMA7
+Oct  7 19:28:30 cambridge kernel: [    2.326071] ata3.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 31/32), AA
+Oct  7 19:28:30 cambridge kernel: [    2.326079] ata3.00: SB600 AHCI: limiting to 255 sectors per cmd
+Oct  7 19:28:30 cambridge kernel: [    2.332203] ata3.00: SB600 AHCI: limiting to 255 sectors per cmd
+Oct  7 19:28:30 cambridge kernel: [    2.332208] ata3.00: configured for UDMA/133
+Oct  7 19:28:30 cambridge kernel: [    2.332396] scsi 2:0:0:0: Direct-Access     ATA      SAMSUNG HM160HI  0-06 PQ: 0 ANSI: 5
+Oct  7 19:28:30 cambridge kernel: [    2.332756] sd 2:0:0:0: Attached scsi generic sg1 type 0
+Oct  7 19:28:30 cambridge kernel: [    2.332760] sd 2:0:0:0: [sda] 312581808 512-byte logical blocks: (160 GB/149 GiB)
+Oct  7 19:28:30 cambridge kernel: [    2.332830] sd 2:0:0:0: [sda] Write Protect is off
+Oct  7 19:28:30 cambridge kernel: [    2.332834] sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Oct  7 19:28:30 cambridge kernel: [    2.332863] sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+Oct  7 19:28:30 cambridge kernel: [    2.396303]  sda: sda1 sda2 < sda5 sda6 sda7 > sda3
+Oct  7 19:28:30 cambridge kernel: [    2.397074] sd 2:0:0:0: [sda] Attached SCSI disk
+Oct  7 19:28:30 cambridge kernel: [    3.052299] EXT4-fs (sda1): INFO: recovery required on readonly filesystem
+Oct  7 19:28:30 cambridge kernel: [    3.052304] EXT4-fs (sda1): write access will be enabled during recovery
+Oct  7 19:28:30 cambridge kernel: [    3.792927] EXT4-fs (sda1): recovery complete
+Oct  7 19:28:30 cambridge kernel: [    3.803076] EXT4-fs (sda1): mounted filesystem with ordered data mode. Opts: (null)
+Oct  7 19:28:30 cambridge kernel: [    4.142105] random: nonblocking pool is initialized
+Oct  7 19:28:30 cambridge kernel: [   16.583455] Adding 1951740k swap on /dev/sda5.  Priority:-1 extents:1 across:1951740k FS
+Oct  7 19:28:30 cambridge kernel: [   17.314783] EXT4-fs (sda1): re-mounted. Opts: errors=remount-ro
+Oct  7 19:28:30 cambridge bluetoothd[395]: Bluetooth daemon 4.101
+Oct  7 19:28:30 cambridge bluetoothd[395]: Starting SDP server
+Oct  7 19:28:30 cambridge avahi-daemon[418]: Found user 'avahi' (UID 110) and group 'avahi' (GID 116).
+Oct  7 19:28:30 cambridge avahi-daemon[418]: Successfully dropped root privileges.
+Oct  7 19:28:30 cambridge avahi-daemon[418]: avahi-daemon 0.6.31 starting up.
+Oct  7 19:28:30 cambridge avahi-daemon[418]: Successfully called chroot().
+Oct  7 19:28:30 cambridge avahi-daemon[418]: Successfully dropped remaining capabilities.
+Oct  7 19:28:30 cambridge kernel: [   18.603976] CPU0: Core temperature above threshold, cpu clock throttled (total events = 1)
+Oct  7 19:28:30 cambridge kernel: [   18.604761] CPU0: Core temperature/speed normal
+Oct  7 19:28:30 cambridge kernel: [   18.667564] piix4_smbus 0000:00:14.0: SMBus Host Controller at 0x8410, revision 0
+Oct  7 19:28:30 cambridge kernel: [   18.783180] Bluetooth: Core ver 2.19
+Oct  7 19:28:30 cambridge kernel: [   18.783796] lp: driver loaded but no devices found
+Oct  7 19:28:30 cambridge bluetoothd[395]: DIS cannot start: GATT is disabled
+Oct  7 19:28:30 cambridge bluetoothd[395]: Failed to init deviceinfo plugin
+Oct  7 19:28:30 cambridge bluetoothd[395]: Failed to init proximity plugin
+Oct  7 19:28:30 cambridge bluetoothd[395]: Failed to init time plugin
+Oct  7 19:28:30 cambridge bluetoothd[395]: Failed to init alert plugin
+Oct  7 19:28:30 cambridge bluetoothd[395]: Failed to init thermometer plugin
+Oct  7 19:28:30 cambridge kernel: [   18.784729] NET: Registered protocol family 31
+Oct  7 19:28:30 cambridge kernel: [   18.784734] Bluetooth: HCI device and connection manager initialized
+Oct  7 19:28:30 cambridge kernel: [   18.784748] Bluetooth: HCI socket layer initialized
+Oct  7 19:28:30 cambridge kernel: [   18.784752] Bluetooth: L2CAP socket layer initialized
+Oct  7 19:28:30 cambridge kernel: [   18.784768] Bluetooth: SCO socket layer initialized
+Oct  7 19:28:30 cambridge kernel: [   18.801608] ACPI: Video Device [VGA] (multi-head: yes  rom: no  post: no)
+Oct  7 19:28:30 cambridge kernel: [   18.801673] [Firmware Bug]: ACPI: No _BQC method, cannot determine initial brightness
+Oct  7 19:28:30 cambridge kernel: [   18.802322] acpi device:20: registered as cooling_device3
+Oct  7 19:28:30 cambridge kernel: [   18.802413] input: Video Bus as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:1e/LNXVIDEO:01/input/input9
+Oct  7 19:28:30 cambridge kernel: [   18.813263] sp5100_tco: SP5100/SB800 TCO WatchDog Timer Driver v0.05
+Oct  7 19:28:30 cambridge kernel: [   18.813370] sp5100_tco: PCI Revision ID: 0x14
+Oct  7 19:28:30 cambridge kernel: [   18.813395] sp5100_tco: failed to find MMIO address, giving up.
+Oct  7 19:28:30 cambridge kernel: [   18.819489] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+Oct  7 19:28:30 cambridge kernel: [   18.903673] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+Oct  7 19:28:30 cambridge kernel: [   18.903679] Bluetooth: BNEP filters: protocol multicast
+Oct  7 19:28:30 cambridge kernel: [   18.903691] Bluetooth: BNEP socket layer initialized
+Oct  7 19:28:30 cambridge bluetoothd[395]: Failed to init gatt_example plugin
+Oct  7 19:28:30 cambridge bluetoothd[395]: Bluetooth Management interface initialized
+Oct  7 19:28:30 cambridge kernel: [   18.926350] Bluetooth: RFCOMM TTY layer initialized
+Oct  7 19:28:30 cambridge kernel: [   18.926366] Bluetooth: RFCOMM socket layer initialized
+Oct  7 19:28:30 cambridge kernel: [   18.926380] Bluetooth: RFCOMM ver 1.11
+Oct  7 19:28:31 cambridge kernel: [   19.110632] microcode: CPU0 sig=0x6fd, pf=0x80, revision=0xa3
+Oct  7 19:28:31 cambridge kernel: [   19.141710] [drm] Initialized drm 1.1.0 20060810
+Oct  7 19:28:31 cambridge kernel: [   19.420699] cfg80211: Calling CRDA to update world regulatory domain
+Oct  7 19:28:31 cambridge avahi-daemon[418]: Loading service file /services/udisks.service.
+Oct  7 19:28:32 cambridge avahi-daemon[418]: Network interface enumeration completed.
+Oct  7 19:28:32 cambridge avahi-daemon[418]: Registering HINFO record with values 'X86_64'/'LINUX'.
+Oct  7 19:28:32 cambridge avahi-daemon[418]: Server startup complete. Host name is cambridge.local. Local service cookie is 3685844532.
+Oct  7 19:28:32 cambridge avahi-daemon[418]: Service "cambridge" (/services/udisks.service) successfully established.
+Oct  7 19:28:32 cambridge kernel: [   20.101735] microcode: CPU1 sig=0x6fd, pf=0x80, revision=0xa3
+Oct  7 19:28:32 cambridge kernel: [   20.120971] audit: type=1400 audit(1412702912.106:2): apparmor="STATUS" operation="profile_load" name="/sbin/dhclient" pid=430 comm="apparmor_parser"
+Oct  7 19:28:32 cambridge kernel: [   20.121156] audit: type=1400 audit(1412702912.106:3): apparmor="STATUS" operation="profile_load" name="/usr/lib/NetworkManager/nm-dhcp-client.action" pid=430 comm="apparmor_parser"
+Oct  7 19:28:32 cambridge kernel: [   20.121303] audit: type=1400 audit(1412702912.106:4): apparmor="STATUS" operation="profile_load" name="/usr/lib/connman/scripts/dhclient-script" pid=430 comm="apparmor_parser"
+Oct  7 19:28:32 cambridge kernel: [   20.123106] microcode: Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+Oct  7 19:28:32 cambridge kernel: [   20.142513] ppdev: user-space parallel port driver
+Oct  7 19:28:32 cambridge kernel: [   20.932639] psmouse serio4: synaptics: Touchpad model: 1, fw: 6.3, id: 0x1c0b1, caps: 0xa04713/0x200000/0x0, board id: 3655, fw id: 358995
+Oct  7 19:28:32 cambridge kernel: [   20.967989] input: SynPS/2 Synaptics TouchPad as /devices/platform/i8042/serio4/input/input13
+Oct  7 19:28:33 cambridge mtp-probe: checking bus 1, device 2: "/sys/devices/pci0000:00/0000:00:13.5/usb1/1-3"
+Oct  7 19:28:33 cambridge mtp-probe: bus: 1, device: 2 was not an MTP device
+Oct  7 19:28:33 cambridge kernel: [   21.291291] cfg80211: World regulatory domain updated:
+Oct  7 19:28:33 cambridge kernel: [   21.291298] cfg80211:  DFS Master region: unset
+Oct  7 19:28:33 cambridge kernel: [   21.291300] cfg80211:   (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp), (dfs_cac_time)
+Oct  7 19:28:33 cambridge kernel: [   21.291304] cfg80211:   (2402000 KHz - 2472000 KHz @ 40000 KHz), (300 mBi, 2000 mBm), (N/A)
+Oct  7 19:28:33 cambridge kernel: [   21.291307] cfg80211:   (2457000 KHz - 2482000 KHz @ 40000 KHz), (300 mBi, 2000 mBm), (N/A)
+Oct  7 19:28:33 cambridge kernel: [   21.291310] cfg80211:   (2474000 KHz - 2494000 KHz @ 20000 KHz), (300 mBi, 2000 mBm), (N/A)
+Oct  7 19:28:33 cambridge kernel: [   21.291313] cfg80211:   (5170000 KHz - 5250000 KHz @ 40000 KHz), (300 mBi, 2000 mBm), (N/A)
+Oct  7 19:28:33 cambridge kernel: [   21.291316] cfg80211:   (5735000 KHz - 5835000 KHz @ 40000 KHz), (300 mBi, 2000 mBm), (N/A)
+Oct  7 19:28:33 cambridge kernel: [   21.367566] [drm] radeon kernel modesetting enabled.
+Oct  7 19:28:33 cambridge kernel: [   21.367703] checking generic (a6d60 e000) vs hw (c0000000 10000000)
+Oct  7 19:28:33 cambridge kernel: [   21.375093] [drm] initializing kernel modesetting (RS600 0x1002:0x7942 0x144D:0xC034).
+Oct  7 19:28:33 cambridge kernel: [   21.375120] [drm] register mmio base: 0xD0000000
+Oct  7 19:28:33 cambridge kernel: [   21.375122] [drm] register mmio size: 65536
+Oct  7 19:28:33 cambridge kernel: [   21.375208] ATOM BIOS: ATI
+Oct  7 19:28:33 cambridge kernel: [   21.375242] radeon 0000:01:05.0: VRAM: 256M 0x00000000B0000000 - 0x00000000BFFFFFFF (256M used)
+Oct  7 19:28:33 cambridge kernel: [   21.375245] radeon 0000:01:05.0: GTT: 512M 0x0000000090000000 - 0x00000000AFFFFFFF
+Oct  7 19:28:33 cambridge kernel: [   21.375265] [drm] Detected VRAM RAM=256M, BAR=256M
+Oct  7 19:28:33 cambridge kernel: [   21.375267] [drm] RAM width 128bits DDR
+Oct  7 19:28:33 cambridge failsafe: Failsafe of 120 seconds reached.
+Oct  7 19:28:33 cambridge kernel: [   21.384141] [TTM] Zone  kernel: Available graphics memory: 1411302 kiB
+Oct  7 19:28:33 cambridge kernel: [   21.384145] [TTM] Initializing pool allocator
+Oct  7 19:28:33 cambridge kernel: [   21.384152] [TTM] Initializing DMA pool allocator
+Oct  7 19:28:33 cambridge kernel: [   21.384188] [drm] radeon: 256M of VRAM memory ready
+Oct  7 19:28:33 cambridge kernel: [   21.384190] [drm] radeon: 512M of GTT memory ready.
+Oct  7 19:28:33 cambridge kernel: [   21.384219] [drm] GART: num cpu pages 131072, num gpu pages 131072
+Oct  7 19:28:33 cambridge kernel: [   21.397055] [drm] radeon: 1 quad pipes, 1 z pipes initialized.
+Oct  7 19:28:33 cambridge kernel: [   21.400091] [drm] PCIE GART of 512M enabled (table at 0x00000000B0040000).
+Oct  7 19:28:33 cambridge kernel: [   21.400128] radeon 0000:01:05.0: WB enabled
+Oct  7 19:28:33 cambridge kernel: [   21.400133] radeon 0000:01:05.0: fence driver on ring 0 use gpu addr 0x0000000090000000 and cpu addr 0xffff88009d38f000
+Oct  7 19:28:33 cambridge kernel: [   21.400136] [drm] Supports vblank timestamp caching Rev 2 (21.10.2013).
+Oct  7 19:28:33 cambridge kernel: [   21.400138] [drm] Driver supports precise vblank timestamp query.
+Oct  7 19:28:33 cambridge kernel: [   21.400156] [drm] radeon: irq initialized.
+Oct  7 19:28:33 cambridge kernel: [   21.400179] [drm] Loading RS600 Microcode
+Oct  7 19:28:33 cambridge kernel: [   21.542590] ath5k 0000:02:00.0: can't disable ASPM; OS doesn't have ASPM control
+Oct  7 19:28:33 cambridge kernel: [   21.542751] ath5k 0000:02:00.0: registered as 'phy0'
+Oct  7 19:28:33 cambridge kernel: [   21.562883] [drm] radeon: ring at 0x0000000090001000
+Oct  7 19:28:33 cambridge kernel: [   21.562908] [drm] ring test succeeded in 0 usecs
+Oct  7 19:28:33 cambridge kernel: [   21.563036] [drm] ib test succeeded in 0 usecs
+Oct  7 19:28:33 cambridge kernel: [   21.564544] [drm] radeon atom DIG backlight initialized
+Oct  7 19:28:33 cambridge kernel: [   21.564551] [drm] Radeon Display Connectors
+Oct  7 19:28:33 cambridge kernel: [   21.564554] [drm] Connector 0:
+Oct  7 19:28:33 cambridge kernel: [   21.564557] [drm]   VGA-1
+Oct  7 19:28:33 cambridge kernel: [   21.564561] [drm]   DDC: 0x7e40 0x7e40 0x7e44 0x7e44 0x7e48 0x7e48 0x7e4c 0x7e4c
+Oct  7 19:28:33 cambridge kernel: [   21.564565] [drm]   Encoders:
+Oct  7 19:28:33 cambridge kernel: [   21.564568] [drm]     CRT1: INTERNAL_KLDSCP_DAC1
+Oct  7 19:28:33 cambridge kernel: [   21.564571] [drm] Connector 1:
+Oct  7 19:28:33 cambridge kernel: [   21.564574] [drm]   LVDS-1
+Oct  7 19:28:33 cambridge kernel: [   21.564578] [drm]   DDC: 0x7e40 0x7e50 0x7e44 0x7e54 0x7e48 0x7e58 0x7e4c 0x7e5c
+Oct  7 19:28:33 cambridge kernel: [   21.564581] [drm]   Encoders:
+Oct  7 19:28:33 cambridge kernel: [   21.564584] [drm]     LCD1: INTERNAL_LVTM1
+Oct  7 19:28:33 cambridge kernel: [   21.564587] [drm] Connector 2:
+Oct  7 19:28:33 cambridge kernel: [   21.564590] [drm]   SVIDEO-1
+Oct  7 19:28:33 cambridge kernel: [   21.564592] [drm]   Encoders:
+Oct  7 19:28:33 cambridge kernel: [   21.564595] [drm]     TV1: INTERNAL_KLDSCP_DAC1
+Oct  7 19:28:33 cambridge kernel: [   21.740381] Linux video capture interface: v2.00
+Oct  7 19:28:34 cambridge kernel: [   22.251984] [drm] fb mappable at 0xC0140000
+Oct  7 19:28:34 cambridge kernel: [   22.251990] [drm] vram apper at 0xC0000000
+Oct  7 19:28:34 cambridge kernel: [   22.251992] [drm] size 4096000
+Oct  7 19:28:34 cambridge kernel: [   22.251994] [drm] fb depth is 24
+Oct  7 19:28:34 cambridge kernel: [   22.251995] [drm]    pitch is 5120
+Oct  7 19:28:34 cambridge kernel: [   22.251999] checking generic (a6d60 e000) vs hw (c0000000 10000000)
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  ModemManager (version 0.6.0.0) starting...
+Oct  7 19:28:35 cambridge kernel: [   22.252622] fbcon: radeondrmfb (fb1) is primary device
+Oct  7 19:28:35 cambridge kernel: [   22.252623] fbcon: Remapping primary device, fb1, to tty 1-63
+Oct  7 19:28:35 cambridge kernel: [   22.318249] ath: EEPROM regdomain: 0x65
+Oct  7 19:28:35 cambridge kernel: [   22.318251] ath: EEPROM indicates we should expect a direct regpair map
+Oct  7 19:28:35 cambridge kernel: [   22.318255] ath: Country alpha2 being used: 00
+Oct  7 19:28:35 cambridge kernel: [   22.318256] ath: Regpair used: 0x65
+Oct  7 19:28:35 cambridge kernel: [   22.366794] ieee80211 phy0: Selected rate control algorithm 'minstrel_ht'
+Oct  7 19:28:35 cambridge kernel: [   22.367390] ath5k: phy0: Atheros AR2425 chip found (MAC: 0xe2, PHY: 0x70)
+Oct  7 19:28:35 cambridge kernel: [   22.517201] audit: type=1400 audit(1412702914.502:5): apparmor="STATUS" operation="profile_load" name="/usr/lib/cups/backend/cups-pdf" pid=527 comm="apparmor_parser"
+Oct  7 19:28:35 cambridge kernel: [   22.517647] audit: type=1400 audit(1412702914.502:6): apparmor="STATUS" operation="profile_load" name="/usr/sbin/cupsd" pid=527 comm="apparmor_parser"
+Oct  7 19:28:35 cambridge kernel: [   22.775458] uvcvideo: Found UVC 1.00 device Vega USB 2.0 Camera. (0ac8:c302)
+Oct  7 19:28:35 cambridge kernel: [   22.848737] input: Vega USB 2.0 Camera. as /devices/pci0000:00/0000:00:13.5/usb1/1-3/1-3:1.0/input/input14
+Oct  7 19:28:35 cambridge kernel: [   22.849012] usbcore: registered new interface driver uvcvideo
+Oct  7 19:28:35 cambridge kernel: [   22.849013] USB Video Class driver (1.1.1)
+Oct  7 19:28:35 cambridge kernel: [   23.158226] radeon 0000:01:05.0: fb1: radeondrmfb frame buffer device
+Oct  7 19:28:35 cambridge kernel: [   23.158228] radeon 0000:01:05.0: registered panic notifier
+Oct  7 19:28:35 cambridge kernel: [   23.173130] [drm] Initialized radeon 2.40.0 20080528 for 0000:01:05.0 on minor 0
+Oct  7 19:28:35 cambridge kernel: [   23.231763] sound hdaudioC0D3: autoconfig: line_outs=1 (0x14/0x0/0x0/0x0/0x0) type:speaker
+Oct  7 19:28:35 cambridge kernel: [   23.231777] sound hdaudioC0D3:    speaker_outs=0 (0x0/0x0/0x0/0x0/0x0)
+Oct  7 19:28:35 cambridge kernel: [   23.231780] sound hdaudioC0D3:    hp_outs=1 (0x15/0x0/0x0/0x0/0x0)
+Oct  7 19:28:35 cambridge kernel: [   23.231783] sound hdaudioC0D3:    mono: mono_out=0x0
+Oct  7 19:28:35 cambridge kernel: [   23.231785] sound hdaudioC0D3:    inputs:
+Oct  7 19:28:35 cambridge kernel: [   23.231788] sound hdaudioC0D3:      Internal Mic=0x19
+Oct  7 19:28:35 cambridge kernel: [   23.231791] sound hdaudioC0D3:      Mic=0x18
+Oct  7 19:28:35 cambridge kernel: [   23.244670] input: HDA ATI SB Mic as /devices/pci0000:00/0000:00:14.2/sound/card0/input15
+Oct  7 19:28:35 cambridge kernel: [   23.244895] input: HDA ATI SB Headphone as /devices/pci0000:00/0000:00:14.2/sound/card0/input16
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Wavecom'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Linktop'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Option High-Speed'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'MotoC'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Longcheer'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Option'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'SimTech'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'X22X'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Gobi'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Ericsson MBM'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'AnyData'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Sierra'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'ZTE'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Huawei'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Nokia'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Samsung'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Novatel'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Iridium'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Cinterion'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Loaded plugin 'Generic'
+Oct  7 19:28:35 cambridge modem-manager[614]: <info>  Successfully loaded 20 plugins
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> NetworkManager (version 0.9.8.0) is starting...
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> Read config file /etc/NetworkManager/NetworkManager.conf
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> WEXT support is enabled
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> VPN: loaded org.freedesktop.NetworkManager.pptp
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> DNS: loaded plugin dnsmasq
+Oct  7 19:28:35 cambridge dbus[374]: [system] Activating service name='org.freedesktop.PolicyKit1' (using servicehelper)
+Oct  7 19:28:35 cambridge kernel: [   23.959942] audit: type=1400 audit(1412702915.942:7): apparmor="STATUS" operation="profile_replace" name="/sbin/dhclient" pid=712 comm="apparmor_parser"
+Oct  7 19:28:35 cambridge kernel: [   23.960256] audit: type=1400 audit(1412702915.946:8): apparmor="STATUS" operation="profile_replace" name="/usr/lib/NetworkManager/nm-dhcp-client.action" pid=712 comm="apparmor_parser"
+Oct  7 19:28:35 cambridge kernel: [   23.960453] audit: type=1400 audit(1412702915.946:9): apparmor="STATUS" operation="profile_replace" name="/usr/lib/connman/scripts/dhclient-script" pid=712 comm="apparmor_parser"
+Oct  7 19:28:35 cambridge polkitd[721]: started daemon version 0.105 using authority implementation `local' version `0.105'
+Oct  7 19:28:35 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.PolicyKit1'
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: init!
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: update_system_hostname
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPluginIfupdown: management mode: unmanaged
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: devices added (path: /sys/devices/pci0000:00/0000:00:05.0/0000:02:00.0/net/wlan0, iface: wlan0)
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: device added (path: /sys/devices/pci0000:00/0000:00:05.0/0000:02:00.0/net/wlan0, iface: wlan0): no ifupdown configuration found.
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: devices added (path: /sys/devices/pci0000:00/0000:00:06.0/0000:05:00.0/net/eth0, iface: eth0)
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: device added (path: /sys/devices/pci0000:00/0000:00:06.0/0000:05:00.0/net/eth0, iface: eth0): no ifupdown configuration found.
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: devices added (path: /sys/devices/virtual/net/lo, iface: lo)
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: device added (path: /sys/devices/virtual/net/lo, iface: lo): no ifupdown configuration found.
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: end _init.
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> Loaded plugin ifupdown: (C) 2008 Canonical Ltd.  To report bugs please use the NetworkManager mailing list.
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> Loaded plugin keyfile: (c) 2007 - 2010 Red Hat, Inc.  To report bugs please use the NetworkManager mailing list.
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ofono: Acquired D-Bus service com.canonical.NMOfono
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ofono: init!
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ofono: end _init.
+Oct  7 19:28:35 cambridge NetworkManager[714]: <info> Loaded plugin (null): (null)
+Oct  7 19:28:35 cambridge NetworkManager[714]:    Ifupdown: get unmanaged devices count: 0
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: (31362304) ... get_connections.
+Oct  7 19:28:35 cambridge NetworkManager[714]:    SCPlugin-Ifupdown: (31362304) ... get_connections (managed=false): return empty list.
+Oct  7 19:28:36 cambridge NetworkManager[714]:    SCPlugin-Ofono: (31149424) ... get_connections.
+Oct  7 19:28:36 cambridge NetworkManager[714]:    SCPlugin-Ofono: (31149424) connections count: 0
+Oct  7 19:28:36 cambridge NetworkManager[714]:    Ifupdown: get unmanaged devices count: 0
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> modem-manager is now available
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> monitoring kernel firmware directory '/lib/firmware'.
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> rfkill0: found WiFi radio killswitch (at /sys/devices/pci0000:00/0000:00:05.0/0000:02:00.0/ieee80211/phy0/rfkill0) (driver ath5k)
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> WiFi hardware radio set enabled
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> WiFi enabled by radio killswitch; enabled by state file
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> WWAN enabled by radio killswitch; enabled by state file
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> WiMAX enabled by radio killswitch; enabled by state file
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> Networking is enabled by state file
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): using nl80211 for WiFi device control
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): driver supports Access Point (AP) mode
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): new 802.11 WiFi device (driver: 'ath5k' ifindex: 3)
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): exported as /org/freedesktop/NetworkManager/Devices/0
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): device state change: unmanaged -> unavailable (reason 'managed') [10 20 2]
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): bringing up device.
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): preparing device.
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): deactivating device (reason 'managed') [2]
+Oct  7 19:28:36 cambridge NetworkManager[714]: <warn> failed to allocate link cache: (-12) Object not found
+Oct  7 19:28:36 cambridge dbus[374]: [system] Activating service name='fi.w1.wpa_supplicant1' (using servicehelper)
+Oct  7 19:28:36 cambridge kernel: [   24.256033] IPv6: ADDRCONF(NETDEV_UP): wlan0: link is not ready
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (eth0): carrier is OFF
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (eth0): new Ethernet device (driver: 'sky2' ifindex: 2)
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (eth0): exported as /org/freedesktop/NetworkManager/Devices/1
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (eth0): device state change: unmanaged -> unavailable (reason 'managed') [10 20 2]
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (eth0): bringing up device.
+Oct  7 19:28:36 cambridge kernel: [   24.323434] sky2 0000:05:00.0 eth0: enabling interface
+Oct  7 19:28:36 cambridge kernel: [   24.323785] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (eth0): preparing device.
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (eth0): deactivating device (reason 'managed') [2]
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> Added default wired connection 'Wired connection 1' for /sys/devices/pci0000:00/0000:00:06.0/0000:05:00.0/net/eth0
+Oct  7 19:28:36 cambridge NetworkManager[714]: <warn> /sys/devices/virtual/net/lo: couldn't determine device driver; ignoring...
+Oct  7 19:28:36 cambridge NetworkManager[714]: <warn> /sys/devices/virtual/net/lo: couldn't determine device driver; ignoring...
+Oct  7 19:28:36 cambridge dbus[374]: [system] Successfully activated service 'fi.w1.wpa_supplicant1'
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> wpa_supplicant started
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0) supports 4 scan SSIDs
+Oct  7 19:28:36 cambridge NetworkManager[714]: <warn> Trying to remove a non-existant call id.
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): supplicant interface state: starting -> ready
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): device state change: unavailable -> disconnected (reason 'supplicant-available') [20 30 42]
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0): supplicant interface state: ready -> inactive
+Oct  7 19:28:36 cambridge NetworkManager[714]: <info> (wlan0) supports 4 scan SSIDs
+Oct  7 19:28:37 cambridge ntpdate[796]: Can't find host ntp.ubuntu.com: Name or service not known (-2)
+Oct  7 19:28:37 cambridge ntpdate[796]: no servers can be used, exiting
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> (eth0): carrier now ON (device state 20)
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> (eth0): device state change: unavailable -> disconnected (reason 'carrier-changed') [20 30 40]
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Auto-activating connection 'Wired connection 1'.
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) starting connection 'Wired connection 1'
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> (eth0): device state change: disconnected -> prepare (reason 'none') [30 40 0]
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 1 of 5 (Device Prepare) scheduled...
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 1 of 5 (Device Prepare) started...
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 2 of 5 (Device Configure) scheduled...
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 1 of 5 (Device Prepare) complete.
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 2 of 5 (Device Configure) starting...
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> (eth0): device state change: prepare -> config (reason 'none') [40 50 0]
+Oct  7 19:28:38 cambridge kernel: [   26.062116] sky2 0000:05:00.0 eth0: Link is up at 100 Mbps, full duplex, flow control rx
+Oct  7 19:28:38 cambridge kernel: [   26.062140] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 2 of 5 (Device Configure) successful.
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 3 of 5 (IP Configure Start) scheduled.
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 2 of 5 (Device Configure) complete.
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 3 of 5 (IP Configure Start) started...
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> (eth0): device state change: config -> ip-config (reason 'none') [50 70 0]
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Beginning DHCPv4 transaction (timeout in 45 seconds)
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> dhclient started with pid 806
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Beginning IP6 addrconf.
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 3 of 5 (IP Configure Start) complete.
+Oct  7 19:28:38 cambridge dhclient: Internet Systems Consortium DHCP Client 4.2.4
+Oct  7 19:28:38 cambridge dhclient: Copyright 2004-2012 Internet Systems Consortium.
+Oct  7 19:28:38 cambridge dhclient: All rights reserved.
+Oct  7 19:28:38 cambridge dhclient: For info, please visit https://www.isc.org/software/dhcp/
+Oct  7 19:28:38 cambridge dhclient: 
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> (eth0): DHCPv4 state changed nbi -> preinit
+Oct  7 19:28:38 cambridge dhclient: Listening on LPF/eth0/00:13:77:99:fe:aa
+Oct  7 19:28:38 cambridge dhclient: Sending on   LPF/eth0/00:13:77:99:fe:aa
+Oct  7 19:28:38 cambridge dhclient: Sending on   Socket/fallback
+Oct  7 19:28:38 cambridge dhclient: DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 3 (xid=0x4cb2ef3d)
+Oct  7 19:28:38 cambridge dhclient: DHCPREQUEST of 10.55.26.127 on eth0 to 255.255.255.255 port 67 (xid=0x4cb2ef3d)
+Oct  7 19:28:38 cambridge dhclient: DHCPOFFER of 10.55.26.127 from 10.55.26.20
+Oct  7 19:28:38 cambridge dhclient: DHCPACK of 10.55.26.127 from 10.55.26.20
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> (eth0): DHCPv4 state changed preinit -> bound
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info>   address 10.55.26.127
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info>   prefix 24 (255.255.255.0)
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info>   gateway 10.55.26.254
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info>   nameserver '10.55.12.30'
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info>   nameserver '10.55.12.60'
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info>   nameserver '8.8.8.8'
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info>   domain name 'bitherm.com'
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 5 of 5 (IPv4 Configure Commit) scheduled...
+Oct  7 19:28:38 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 5 of 5 (IPv4 Commit) started...
+Oct  7 19:28:38 cambridge avahi-daemon[418]: Joining mDNS multicast group on interface eth0.IPv4 with address 10.55.26.127.
+Oct  7 19:28:38 cambridge avahi-daemon[418]: New relevant interface eth0.IPv4 for mDNS.
+Oct  7 19:28:38 cambridge avahi-daemon[418]: Registering new address record for 10.55.26.127 on eth0.IPv4.
+Oct  7 19:28:38 cambridge dhclient: bound to 10.55.26.127 -- renewal in 245 seconds.
+Oct  7 19:28:38 cambridge kernel: [   26.615966] audit: type=1400 audit(1412702918.598:10): apparmor="STATUS" operation="profile_load" name="/usr/lib/telepathy/mission-control-5" pid=726 comm="apparmor_parser"
+Oct  7 19:28:38 cambridge kernel: [   26.617011] audit: type=1400 audit(1412702918.602:11): apparmor="STATUS" operation="profile_load" name="/usr/lib/telepathy/telepathy-*" pid=726 comm="apparmor_parser"
+Oct  7 19:28:38 cambridge kernel: [   26.617788] audit: type=1400 audit(1412702918.602:12): apparmor="STATUS" operation="profile_load" name="pxgsettings" pid=726 comm="apparmor_parser"
+Oct  7 19:28:38 cambridge kernel: [   26.618250] audit: type=1400 audit(1412702918.602:13): apparmor="STATUS" operation="profile_load" name="sanitized_helper" pid=726 comm="apparmor_parser"
+Oct  7 19:28:38 cambridge kernel: [   26.618525] audit: type=1400 audit(1412702918.602:14): apparmor="STATUS" operation="profile_load" name="/usr/lib/telepathy/telepathy-ofono" pid=726 comm="apparmor_parser"
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> (eth0): device state change: ip-config -> secondaries (reason 'none') [70 90 0]
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 5 of 5 (IPv4 Commit) complete.
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> (eth0): device state change: secondaries -> activated (reason 'none') [90 100 0]
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> Policy set 'Wired connection 1' (eth0) as default for IPv4 routing and DNS.
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> DNS: starting dnsmasq...
+Oct  7 19:28:39 cambridge NetworkManager[714]: <warn> dnsmasq not available on the bus, can't update servers.
+Oct  7 19:28:39 cambridge NetworkManager[714]: <error> [1412702919.247807] [nm-dns-dnsmasq.c:402] update(): dnsmasq owner not found on bus: Could not get owner of name 'org.freedesktop.NetworkManager.dnsmasq': no such name
+Oct  7 19:28:39 cambridge NetworkManager[714]: <warn> DNS: plugin dnsmasq update failed
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> Writing DNS information to /sbin/resolvconf
+Oct  7 19:28:39 cambridge dnsmasq[810]: started, version 2.66 cache disabled
+Oct  7 19:28:39 cambridge dnsmasq[810]: compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth
+Oct  7 19:28:39 cambridge dnsmasq[810]: DBus support enabled: connected to system bus
+Oct  7 19:28:39 cambridge dnsmasq[810]: warning: no upstream servers configured
+Oct  7 19:28:39 cambridge avahi-daemon[418]: Joining mDNS multicast group on interface eth0.IPv6 with address fe80::213:77ff:fe99:feaa.
+Oct  7 19:28:39 cambridge avahi-daemon[418]: New relevant interface eth0.IPv6 for mDNS.
+Oct  7 19:28:39 cambridge avahi-daemon[418]: Registering new address record for fe80::213:77ff:fe99:feaa on eth0.*.
+Oct  7 19:28:39 cambridge kernel: [   27.793512] audit: type=1400 audit(1412702919.778:15): apparmor="STATUS" operation="profile_replace" name="/usr/lib/cups/backend/cups-pdf" pid=809 comm="apparmor_parser"
+Oct  7 19:28:39 cambridge kernel: [   27.794283] audit: type=1400 audit(1412702919.778:16): apparmor="STATUS" operation="profile_replace" name="/usr/sbin/cupsd" pid=809 comm="apparmor_parser"
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> Activation (eth0) successful, device activated.
+Oct  7 19:28:39 cambridge dbus[374]: [system] Activating service name='org.freedesktop.nm_dispatcher' (using servicehelper)
+Oct  7 19:28:39 cambridge NetworkManager[714]: <warn> dnsmasq appeared on DBus: :1.14
+Oct  7 19:28:39 cambridge NetworkManager[714]: <info> Writing DNS information to /sbin/resolvconf
+Oct  7 19:28:39 cambridge dnsmasq[810]: setting upstream servers from DBus
+Oct  7 19:28:39 cambridge dnsmasq[810]: using nameserver 8.8.8.8#53
+Oct  7 19:28:39 cambridge dnsmasq[810]: using nameserver 10.55.12.60#53
+Oct  7 19:28:39 cambridge dnsmasq[810]: using nameserver 10.55.12.30#53
+Oct  7 19:28:39 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+Oct  7 19:28:40 cambridge kernel: [   28.416323] audit: type=1400 audit(1412702920.402:17): apparmor="STATUS" operation="profile_load" name="/usr/sbin/tcpdump" pid=864 comm="apparmor_parser"
+Oct  7 19:28:46 cambridge ntpdate[903]: adjust time server 91.189.89.199 offset -0.273481 sec
+Oct  7 19:28:47 cambridge kernel: [   35.278678] audit: type=1400 audit(1412702927.262:18): apparmor="STATUS" operation="profile_load" name="/usr/bin/evince" pid=713 comm="apparmor_parser"
+Oct  7 19:28:47 cambridge kernel: [   35.280086] audit: type=1400 audit(1412702927.266:19): apparmor="STATUS" operation="profile_load" name="sanitized_helper" pid=713 comm="apparmor_parser"
+Oct  7 19:28:47 cambridge kernel: [   35.282208] audit: type=1400 audit(1412702927.266:20): apparmor="STATUS" operation="profile_load" name="/usr/bin/evince-previewer" pid=713 comm="apparmor_parser"
+Oct  7 19:28:47 cambridge kernel: [   35.283055] audit: type=1400 audit(1412702927.266:21): apparmor="STATUS" operation="profile_load" name="sanitized_helper" pid=713 comm="apparmor_parser"
+Oct  7 19:28:47 cambridge kernel: [   35.284470] audit: type=1400 audit(1412702927.270:22): apparmor="STATUS" operation="profile_load" name="/usr/bin/evince-thumbnailer" pid=713 comm="apparmor_parser"
+Oct  7 19:28:47 cambridge kernel: [   35.285173] audit: type=1400 audit(1412702927.270:23): apparmor="STATUS" operation="profile_load" name="sanitized_helper" pid=713 comm="apparmor_parser"
+Oct  7 19:28:47 cambridge cron[1057]: (CRON) INFO (pidfile fd = 3)
+Oct  7 19:28:47 cambridge anacron[1100]: Anacron 2.3 started on 2014-10-07
+Oct  7 19:28:47 cambridge anacron[1100]: Normal exit (0 jobs run)
+Oct  7 19:28:47 cambridge cron[1106]: (CRON) STARTUP (fork ok)
+Oct  7 19:28:47 cambridge acpid: starting up with netlink and the input layer
+Oct  7 19:28:47 cambridge cron[1106]: (CRON) INFO (Running @reboot jobs)
+Oct  7 19:28:47 cambridge acpid: 9 rules loaded
+Oct  7 19:28:47 cambridge acpid: waiting for events: event logging is off
+Oct  7 19:28:48 cambridge dbus[374]: [system] Activating service name='org.freedesktop.Accounts' (using servicehelper)
+Oct  7 19:28:48 cambridge accounts-daemon[1181]: started daemon version 0.6.34
+Oct  7 19:28:48 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.Accounts'
+Oct  7 19:28:48 cambridge whoopsie[1092]: whoopsie 0.2.24.1.2 starting up.
+Oct  7 19:28:48 cambridge whoopsie[1092]: Using lock path: /var/lock/whoopsie/lock
+Oct  7 19:28:48 cambridge whoopsie[1217]: online
+Oct  7 19:28:48 cambridge acpid: client connected from 1179[0:0]
+Oct  7 19:28:48 cambridge acpid: 1 client rule loaded
+Oct  7 19:28:49 cambridge postfix/master[1249]: daemon started -- version 2.10.2, configuration /etc/postfix
+Oct  7 19:28:50 cambridge gdm-simple-slave[1150]: Failed to give slave programs access to the display. Trying to proceed.
+Oct  7 19:28:51 cambridge gdm-launch-environment][1353]: AccountsService: ActUserManager: user (null) has no username (object path: /org/freedesktop/Accounts/User1000, uid: 0)
+Oct  7 19:28:52 cambridge dbus[374]: [system] Activating service name='org.freedesktop.UPower' (using servicehelper)
+Oct  7 19:28:52 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.UPower'
+Oct  7 19:28:53 cambridge dbus[374]: [system] Activating service name='org.freedesktop.systemd1' (using servicehelper)
+Oct  7 19:28:53 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.systemd1'
+Oct  7 19:28:53 cambridge dbus[374]: [system] Activating service name='org.freedesktop.ColorManager' (using servicehelper)
+Oct  7 19:28:53 cambridge colord: Using config file /etc/colord.conf
+Oct  7 19:28:53 cambridge colord: Using mapping database file /var/lib/colord/mapping.db
+Oct  7 19:28:53 cambridge colord: Using device database file /var/lib/colord/storage.db
+Oct  7 19:28:53 cambridge colord: loaded plugin libcd_plugin_camera.so
+Oct  7 19:28:53 cambridge colord: loaded plugin libcd_plugin_scanner.so
+Oct  7 19:28:53 cambridge colord: plugin /usr/lib/x86_64-linux-gnu/colord-plugins/libcd_plugin_sane.so not loaded: plugin refused to load
+Oct  7 19:28:53 cambridge colord: Daemon ready for requests
+Oct  7 19:28:53 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.ColorManager'
+Oct  7 19:28:53 cambridge colord: Profile added: icc-a3fb06a189e5654272f614e56cd57921
+Oct  7 19:28:53 cambridge colord: Profile added: icc-b920cdc20756e05653f42f9f171ecec9
+Oct  7 19:28:53 cambridge colord: Profile added: icc-a5cf2e0debcd2aed283c58d15ca28da9
+Oct  7 19:28:53 cambridge colord: Profile added: icc-66cedf35b4ba8c0be05be4e53ee68bbe
+Oct  7 19:28:53 cambridge colord: Profile added: icc-10f8fa4e3eae00a31f679de411c9c737
+Oct  7 19:28:53 cambridge colord: Profile added: icc-f3f81cb5b41e8de556fdcc01ccb29c5f
+Oct  7 19:28:53 cambridge colord: Profile added: icc-7da256bc299fa3e414b0d5bfef41697d
+Oct  7 19:28:53 cambridge colord: Profile added: icc-c7db4d1010988277db4d076f37757a01
+Oct  7 19:28:53 cambridge colord: Profile added: icc-0075bbf6787fe025e3e8be7c60ab1cc0
+Oct  7 19:28:53 cambridge colord: Profile added: icc-33eef553a4017f238711fb8afc0d6e87
+Oct  7 19:28:53 cambridge colord: Profile added: icc-93945c373d44de2f7199fc8b0782fadf
+Oct  7 19:28:53 cambridge colord: Profile added: icc-f719b10f8219a720944043462516a013
+Oct  7 19:28:53 cambridge colord: Profile added: icc-2aab7bab389c800a5a8cb31a7d6ba1ef
+Oct  7 19:28:53 cambridge colord: Profile added: icc-3660934ca71cad605724215aa7e6a5a4
+Oct  7 19:28:53 cambridge colord: Profile added: icc-9d21c156e7631af5bc00bec7b35c31a9
+Oct  7 19:28:53 cambridge colord: Profile added: icc-bab0d408ed0547d599c49f07675cdffc
+Oct  7 19:28:53 cambridge colord: Profile added: icc-0fb902a132159af7eee4a70af0921c06
+Oct  7 19:28:53 cambridge dbus[374]: [system] Activating service name='org.freedesktop.RealtimeKit1' (using servicehelper)
+Oct  7 19:28:53 cambridge colord: Profile added: icc-3ad3ba8e09b76fa91573dc2f1aad6e98
+Oct  7 19:28:53 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.RealtimeKit1'
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Successfully called chroot.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Successfully dropped privileges.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Successfully limited resources.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Running.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Successfully made thread 1491 of process 1491 (n/a) owned by '112' high priority at nice level -11.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Supervising 1 threads of 1 processes of 1 users.
+Oct  7 19:28:53 cambridge colord: Profile added: icc-0efe0c4cd9b09c72ff5b0d407ebdbd80
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Watchdog thread running.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Canary thread running.
+Oct  7 19:28:53 cambridge colord: Profile added: icc-68e72a11d2fc535f7d3c7d157432bbd1
+Oct  7 19:28:53 cambridge colord: Profile added: icc-465d1507ae264c466248b7efc1f2ee22
+Oct  7 19:28:53 cambridge colord: Profile added: icc-e209f6f1e897d6fbc3bbc66e21fe46a9
+Oct  7 19:28:53 cambridge colord: Profile added: icc-ec9cedcd8450615939a12ac24ec5e8dc
+Oct  7 19:28:53 cambridge colord: Profile added: icc-bbb2b6d0b2f673b7e0b5066a257fc194
+Oct  7 19:28:53 cambridge colord: Device added: sysfs-Vimicro_Corp.-Vega_USB_2.0_Camera.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Successfully made thread 1496 of process 1491 (n/a) owned by '112' RT at priority 5.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Supervising 2 threads of 1 processes of 1 users.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Successfully made thread 1497 of process 1491 (n/a) owned by '112' RT at priority 5.
+Oct  7 19:28:53 cambridge rtkit-daemon[1493]: Supervising 3 threads of 1 processes of 1 users.
+Oct  7 19:28:53 cambridge dbus[374]: [system] Activating service name='org.freedesktop.locale1' (using servicehelper)
+Oct  7 19:28:53 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.locale1'
+Oct  7 19:28:54 cambridge colord: Device added: xrandr-Seiko Epson Corporation
+Oct  7 19:28:54 cambridge colord: Automatic metadata add icc-6a12c86d8750cf03c4f6a4e62b637df2 to xrandr-Seiko Epson Corporation
+Oct  7 19:28:54 cambridge colord: Profile added: icc-6a12c86d8750cf03c4f6a4e62b637df2
+Oct  7 19:28:57 cambridge NetworkManager[714]: <info> (eth0): IP6 addrconf timed out or failed.
+Oct  7 19:28:57 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 4 of 5 (IPv6 Configure Timeout) scheduled...
+Oct  7 19:28:57 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 4 of 5 (IPv6 Configure Timeout) started...
+Oct  7 19:28:57 cambridge NetworkManager[714]: <info> Activation (eth0) Stage 4 of 5 (IPv6 Configure Timeout) complete.
+Oct  7 19:29:02 cambridge gdm-simple-slave[1150]: Failed to remove slave program access to the display. Trying to proceed.
+Oct  7 19:29:02 cambridge colord: device removed: xrandr-Seiko Epson Corporation
+Oct  7 19:29:02 cambridge colord: Profile removed: icc-6a12c86d8750cf03c4f6a4e62b637df2
+Oct  7 19:29:04 cambridge rtkit-daemon[1493]: Successfully made thread 1877 of process 1877 (n/a) owned by '1000' high priority at nice level -11.
+Oct  7 19:29:04 cambridge rtkit-daemon[1493]: Supervising 4 threads of 2 processes of 2 users.
+Oct  7 19:29:04 cambridge rtkit-daemon[1493]: Successfully made thread 1883 of process 1877 (n/a) owned by '1000' RT at priority 5.
+Oct  7 19:29:04 cambridge rtkit-daemon[1493]: Supervising 5 threads of 2 processes of 2 users.
+Oct  7 19:29:04 cambridge rtkit-daemon[1493]: Successfully made thread 1884 of process 1877 (n/a) owned by '1000' RT at priority 5.
+Oct  7 19:29:04 cambridge rtkit-daemon[1493]: Supervising 6 threads of 2 processes of 2 users.
+Oct  7 19:29:07 cambridge dbus[374]: [system] Activating service name='org.freedesktop.UDisks2' (using servicehelper)
+Oct  7 19:29:07 cambridge udisksd[1973]: udisks daemon version 2.1.0 starting
+Oct  7 19:29:07 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.UDisks2'
+Oct  7 19:29:07 cambridge udisksd[1973]: Acquired the name org.freedesktop.UDisks2 on the system message bus
+Oct  7 19:29:09 cambridge goa[1998]: goa-daemon version 3.8.3 starting [main.c:113, main()]
+Oct  7 19:29:38 cambridge whoopsie[1217]: online
+Oct  7 19:29:39 cambridge whoopsie[1217]: online
+Oct  7 19:30:47  whoopsie[1217]: last message repeated 3 times
+Oct  7 19:32:00  whoopsie[1217]: last message repeated 5 times
+Oct  7 19:32:43 cambridge dhclient: DHCPREQUEST of 10.55.26.127 on eth0 to 10.55.26.20 port 67 (xid=0x4cb2ef3d)
+Oct  7 19:32:43 cambridge dhclient: DHCPACK of 10.55.26.127 from 10.55.26.20
+Oct  7 19:32:43 cambridge dhclient: bound to 10.55.26.127 -- renewal in 240 seconds.
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info> (eth0): DHCPv4 state changed bound -> renew
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info>   address 10.55.26.127
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info>   prefix 24 (255.255.255.0)
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info>   gateway 10.55.26.254
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info>   nameserver '10.55.12.30'
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info>   nameserver '10.55.12.60'
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info>   nameserver '8.8.8.8'
+Oct  7 19:32:43 cambridge NetworkManager[714]: <info>   domain name 'bitherm.com'
+Oct  7 19:32:43 cambridge dbus[374]: [system] Activating service name='org.freedesktop.nm_dispatcher' (using servicehelper)
+Oct  7 19:32:43 cambridge dbus[374]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+Oct  7 19:32:55 cambridge whoopsie[1217]: online
+Oct  7 19:32:57 cambridge whoopsie[1217]: online
+Oct  7 19:33:11 cambridge kernel: [  299.812045] mce: [Hardware Error]: Machine check events logged
+Oct  7 19:33:24 cambridge whoopsie[1217]: online
+Oct  7 19:34:30  whoopsie[1217]: last message repeated 3 times
