@@ -36,6 +36,15 @@ modules.builtin
 Module.symvers
 *.dwo
 
+# 
+# Task folders
+#
+t01/
+t02/
+t03/
+t04/
+
+
 #
 # Top-level generic files
 #
