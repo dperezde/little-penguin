@@ -378,7 +378,6 @@ static struct cpuidle_driver apm_idle_driver = {
 		{ /* entry 1 is for APM idle */
 			.name = "APM",
 			.desc = "APM idle",
-			.flags = CPUIDLE_FLAG_TIME_VALID,
 			.exit_latency = 250,	/* WAG */
 			.target_residency = 500,	/* WAG */
 			.enter = &apm_cpu_idle
@@ -920,7 +919,7 @@ recalc:
 	} else if (jiffies_since_last_check > idle_period) {
 		unsigned int idle_percentage;
 
-		idle_percentage = stime - last_stime;
+		idle_percentage = cputime_to_jiffies(stime - last_stime);
 		idle_percentage *= 100;
 		idle_percentage /= jiffies_since_last_check;
 		use_apm_idle = (idle_percentage > idle_threshold);
@@ -1089,7 +1088,7 @@ static int apm_get_battery_status(u_short which, u_short *status,
  *	@device: identity of device
  *	@enable: on/off
  *
- *	Activate or deactive power management on either a specific device
+ *	Activate or deactivate power management on either a specific device
  *	or the entire system (%APM_DEVICE_ALL).
  */
 
@@ -2268,7 +2267,7 @@ static int __init apm_init(void)
 
 	dmi_check_system(apm_dmi_table);
 
-	if (apm_info.bios.version == 0 || paravirt_enabled() || machine_is_olpc()) {
+	if (apm_info.bios.version == 0 || machine_is_olpc()) {
 		printk(KERN_INFO "apm: BIOS not found.\n");
 		return -ENODEV;
 	}

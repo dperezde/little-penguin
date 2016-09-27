@@ -13,10 +13,10 @@
 #include "hfs_fs.h"
 #include "btree.h"
 
-int hfs_setxattr(struct dentry *dentry, const char *name,
-		 const void *value, size_t size, int flags)
+int hfs_setxattr(struct dentry *unused, struct inode *inode,
+		 const char *name, const void *value,
+		 size_t size, int flags)
 {
-	struct inode *inode = dentry->d_inode;
 	struct hfs_find_data fd;
 	hfs_cat_rec rec;
 	struct hfs_cat_file *file;
@@ -56,10 +56,9 @@ out:
 	return res;
 }
 
-ssize_t hfs_getxattr(struct dentry *dentry, const char *name,
-			 void *value, size_t size)
+ssize_t hfs_getxattr(struct dentry *unused, struct inode *inode,
+		     const char *name, void *value, size_t size)
 {
-	struct inode *inode = dentry->d_inode;
 	struct hfs_find_data fd;
 	hfs_cat_rec rec;
 	struct hfs_cat_file *file;
@@ -105,7 +104,7 @@ out:
 
 ssize_t hfs_listxattr(struct dentry *dentry, char *buffer, size_t size)
 {
-	struct inode *inode = dentry->d_inode;
+	struct inode *inode = d_inode(dentry);
 
 	if (!S_ISREG(inode->i_mode) || HFS_IS_RSRC(inode))
 		return -EOPNOTSUPP;

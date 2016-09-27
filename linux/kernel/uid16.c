@@ -117,7 +117,7 @@ static int groups16_to_user(old_gid_t __user *grouplist,
 	kgid_t kgid;
 
 	for (i = 0; i < group_info->ngroups; i++) {
-		kgid = GROUP_AT(group_info, i);
+		kgid = group_info->gid[i];
 		group = high2lowgid(from_kgid_munged(user_ns, kgid));
 		if (put_user(group, grouplist+i))
 			return -EFAULT;
@@ -142,7 +142,7 @@ static int groups16_from_user(struct group_info *group_info,
 		if (!gid_valid(kgid))
 			return -EINVAL;
 
-		GROUP_AT(group_info, i) = kgid;
+		group_info->gid[i] = kgid;
 	}
 
 	return 0;
@@ -176,7 +176,7 @@ SYSCALL_DEFINE2(setgroups16, int, gidsetsize, old_gid_t __user *, grouplist)
 	struct group_info *group_info;
 	int retval;
 
-	if (!ns_capable(current_user_ns(), CAP_SETGID))
+	if (!may_setgroups())
 		return -EPERM;
 	if ((unsigned)gidsetsize > NGROUPS_MAX)
 		return -EINVAL;

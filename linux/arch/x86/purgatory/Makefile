@@ -1,3 +1,5 @@
+OBJECT_FILES_NON_STANDARD := y
+
 purgatory-y := purgatory.o stack.o setup-x86_$(BITS).o sha256.o entry64.o string.o
 
 targets += $(purgatory-y)
@@ -5,6 +7,8 @@ PURGATORY_OBJS = $(addprefix $(obj)/,$(purgatory-y))
 
 LDFLAGS_purgatory.ro := -e purgatory_start -r --no-undefined -nostdlib -z nodefaultlib
 targets += purgatory.ro
+
+KCOV_INSTRUMENT := n
 
 # Default KBUILD_CFLAGS can have -pg option set when FTRACE is enabled. That
 # in turn leaves some undefined symbols like __fentry__ in purgatory and not
@@ -18,11 +22,11 @@ $(obj)/purgatory.ro: $(PURGATORY_OBJS) FORCE
 
 targets += kexec-purgatory.c
 
+CMD_BIN2C = $(objtree)/scripts/basic/bin2c
 quiet_cmd_bin2c = BIN2C   $@
-      cmd_bin2c = cat $(obj)/purgatory.ro | $(objtree)/scripts/basic/bin2c kexec_purgatory > $(obj)/kexec-purgatory.c
+      cmd_bin2c = $(CMD_BIN2C) kexec_purgatory < $< > $@
 
 $(obj)/kexec-purgatory.c: $(obj)/purgatory.ro FORCE
 	$(call if_changed,bin2c)
-
 
 obj-$(CONFIG_KEXEC_FILE)	+= kexec-purgatory.o

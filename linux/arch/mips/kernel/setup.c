@@ -24,16 +24,25 @@
 #include <linux/debugfs.h>
 #include <linux/kexec.h>
 #include <linux/sizes.h>
+#include <linux/device.h>
+#include <linux/dma-contiguous.h>
+#include <linux/decompress/generic.h>
 
 #include <asm/addrspace.h>
 #include <asm/bootinfo.h>
 #include <asm/bugs.h>
 #include <asm/cache.h>
+#include <asm/cdmm.h>
 #include <asm/cpu.h>
+#include <asm/debug.h>
 #include <asm/sections.h>
 #include <asm/setup.h>
 #include <asm/smp-ops.h>
 #include <asm/prom.h>
+
+#ifdef CONFIG_MIPS_ELF_APPENDED_DTB
+const char __section(.appended_dtb) __appended_dtb[0x100000];
+#endif /* CONFIG_MIPS_ELF_APPENDED_DTB */
 
 struct cpuinfo_mips cpu_data[NR_CPUS] __read_mostly;
 
@@ -42,13 +51,6 @@ EXPORT_SYMBOL(cpu_data);
 #ifdef CONFIG_VT
 struct screen_info screen_info;
 #endif
-
-/*
- * Despite it's name this variable is even if we don't have PCI
- */
-unsigned int PCI_DMA_BUS_IS_PHYS;
-
-EXPORT_SYMBOL(PCI_DMA_BUS_IS_PHYS);
 
 /*
  * Setup information
@@ -80,14 +82,21 @@ static struct resource data_resource = { .name = "Kernel data", };
 
 static void *detect_magic __initdata = detect_memory_region;
 
-void __init add_memory_region(phys_t start, phys_t size, long type)
+void __init add_memory_region(phys_addr_t start, phys_addr_t size, long type)
 {
 	int x = boot_mem_map.nr_map;
 	int i;
 
+	/*
+	 * If the region reaches the top of the physical address space, adjust
+	 * the size slightly so that (start + size) doesn't overflow
+	 */
+	if (start + size - 1 == (phys_addr_t)ULLONG_MAX)
+		--size;
+
 	/* Sanity check */
 	if (start + size < start) {
-		pr_warning("Trying to add an invalid memory region, skipped\n");
+		pr_warn("Trying to add an invalid memory region, skipped\n");
 		return;
 	}
 
@@ -125,10 +134,10 @@ void __init add_memory_region(phys_t start, phys_t size, long type)
 	boot_mem_map.nr_map++;
 }
 
-void __init detect_memory_region(phys_t start, phys_t sz_min, phys_t sz_max)
+void __init detect_memory_region(phys_addr_t start, phys_addr_t sz_min, phys_addr_t sz_max)
 {
 	void *dm = &detect_magic;
-	phys_t size;
+	phys_addr_t size;
 
 	for (size = sz_min; size < sz_max; size <<= 1) {
 		if (!memcmp(dm, dm + size, sizeof(detect_magic)))
@@ -242,6 +251,35 @@ disable:
 	return 0;
 }
 
+/* In some conditions (e.g. big endian bootloader with a little endian
+   kernel), the initrd might appear byte swapped.  Try to detect this and
+   byte swap it if needed.  */
+static void __init maybe_bswap_initrd(void)
+{
+#if defined(CONFIG_CPU_CAVIUM_OCTEON)
+	u64 buf;
+
+	/* Check for CPIO signature */
+	if (!memcmp((void *)initrd_start, "070701", 6))
+		return;
+
+	/* Check for compressed initrd */
+	if (decompress_method((unsigned char *)initrd_start, 8, NULL))
+		return;
+
+	/* Try again with a byte swapped header */
+	buf = swab64p((u64 *)initrd_start);
+	if (!memcmp(&buf, "070701", 6) ||
+	    decompress_method((unsigned char *)(&buf), 8, NULL)) {
+		unsigned long i;
+
+		pr_info("Byteswapped initrd detected\n");
+		for (i = initrd_start; i < ALIGN(initrd_end, 8); i += 8)
+			swab64s((u64 *)i);
+	}
+#endif
+}
+
 static void __init finalize_initrd(void)
 {
 	unsigned long size = initrd_end - initrd_start;
@@ -254,6 +292,8 @@ static void __init finalize_initrd(void)
 		printk(KERN_ERR "Initrd extends beyond end of memory");
 		goto disable;
 	}
+
+	maybe_bswap_initrd();
 
 	reserve_bootmem(__pa(initrd_start), size, BOOTMEM_DEFAULT);
 	initrd_below_start_ok = 1;
@@ -334,6 +374,11 @@ static void __init bootmem_init(void)
 			min_low_pfn = start;
 		if (end <= reserved_end)
 			continue;
+#ifdef CONFIG_BLK_DEV_INITRD
+		/* Skip zones before initrd and initrd itself */
+		if (initrd_end && end <= (unsigned long)PFN_UP(__pa(initrd_end)))
+			continue;
+#endif
 		if (start >= mapstart)
 			continue;
 		mapstart = max(reserved_end, start);
@@ -456,6 +501,29 @@ static void __init bootmem_init(void)
 	 */
 	reserve_bootmem(PFN_PHYS(mapstart), bootmap_size, BOOTMEM_DEFAULT);
 
+#ifdef CONFIG_RELOCATABLE
+	/*
+	 * The kernel reserves all memory below its _end symbol as bootmem,
+	 * but the kernel may now be at a much higher address. The memory
+	 * between the original and new locations may be returned to the system.
+	 */
+	if (__pa_symbol(_text) > __pa_symbol(VMLINUX_LOAD_ADDRESS)) {
+		unsigned long offset;
+		extern void show_kernel_relocation(const char *level);
+
+		offset = __pa_symbol(_text) - __pa_symbol(VMLINUX_LOAD_ADDRESS);
+		free_bootmem(__pa_symbol(VMLINUX_LOAD_ADDRESS), offset);
+
+#if defined(CONFIG_DEBUG_KERNEL) && defined(CONFIG_DEBUG_INFO)
+		/*
+		 * This information is necessary when debugging the kernel
+		 * But is a security vulnerability otherwise!
+		 */
+		show_kernel_relocation(KERN_INFO);
+#endif
+	}
+#endif
+
 	/*
 	 * Reserve initrd memory if needed.
 	 */
@@ -476,13 +544,14 @@ static void __init bootmem_init(void)
  *  o bootmem_init()
  *  o sparse_init()
  *  o paging_init()
+ *  o dma_contiguous_reserve()
  *
  * At this stage the bootmem allocator is ready to use.
  *
  * NOTE: historically plat_mem_setup did the entire platform initialization.
  *	 This was rather impractical because it meant plat_mem_setup had to
  * get away without any kind of memory allocator.  To keep old code from
- * breaking plat_setup was just renamed to plat_setup and a second platform
+ * breaking plat_setup was just renamed to plat_mem_setup and a second platform
  * initialization hook for anything else was introduced.
  */
 
@@ -490,7 +559,7 @@ static int usermem __initdata;
 
 static int __init early_parse_mem(char *p)
 {
-	unsigned long start, size;
+	phys_addr_t start, size;
 
 	/*
 	 * If a user specifies memory size, we
@@ -542,9 +611,9 @@ static int __init early_parse_elfcorehdr(char *p)
 early_param("elfcorehdr", early_parse_elfcorehdr);
 #endif
 
-static void __init arch_mem_addpart(phys_t mem, phys_t end, int type)
+static void __init arch_mem_addpart(phys_addr_t mem, phys_addr_t end, int type)
 {
-	phys_t size;
+	phys_addr_t size;
 	int i;
 
 	size = end - mem;
@@ -607,8 +676,15 @@ static void __init request_crashkernel(struct resource *res)
 }
 #endif /* !defined(CONFIG_KEXEC)  */
 
+#define USE_PROM_CMDLINE	IS_ENABLED(CONFIG_MIPS_CMDLINE_FROM_BOOTLOADER)
+#define USE_DTB_CMDLINE		IS_ENABLED(CONFIG_MIPS_CMDLINE_FROM_DTB)
+#define EXTEND_WITH_PROM	IS_ENABLED(CONFIG_MIPS_CMDLINE_DTB_EXTEND)
+#define BUILTIN_EXTEND_WITH_PROM	\
+	IS_ENABLED(CONFIG_MIPS_CMDLINE_BUILTIN_EXTEND)
+
 static void __init arch_mem_init(char **cmdline_p)
 {
+	struct memblock_region *reg;
 	extern void plat_mem_setup(void);
 
 	/* call board setup routine */
@@ -630,18 +706,32 @@ static void __init arch_mem_init(char **cmdline_p)
 	pr_info("Determined physical RAM map:\n");
 	print_memory_map();
 
-#ifdef CONFIG_CMDLINE_BOOL
-#ifdef CONFIG_CMDLINE_OVERRIDE
+#if defined(CONFIG_CMDLINE_BOOL) && defined(CONFIG_CMDLINE_OVERRIDE)
 	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
 #else
-	if (builtin_cmdline[0]) {
-		strlcat(arcs_cmdline, " ", COMMAND_LINE_SIZE);
-		strlcat(arcs_cmdline, builtin_cmdline, COMMAND_LINE_SIZE);
+	if ((USE_PROM_CMDLINE && arcs_cmdline[0]) ||
+	    (USE_DTB_CMDLINE && !boot_command_line[0]))
+		strlcpy(boot_command_line, arcs_cmdline, COMMAND_LINE_SIZE);
+
+	if (EXTEND_WITH_PROM && arcs_cmdline[0]) {
+		if (boot_command_line[0])
+			strlcat(boot_command_line, " ", COMMAND_LINE_SIZE);
+		strlcat(boot_command_line, arcs_cmdline, COMMAND_LINE_SIZE);
 	}
-	strlcpy(boot_command_line, arcs_cmdline, COMMAND_LINE_SIZE);
+
+#if defined(CONFIG_CMDLINE_BOOL)
+	if (builtin_cmdline[0]) {
+		if (boot_command_line[0])
+			strlcat(boot_command_line, " ", COMMAND_LINE_SIZE);
+		strlcat(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+	}
+
+	if (BUILTIN_EXTEND_WITH_PROM && arcs_cmdline[0]) {
+		if (boot_command_line[0])
+			strlcat(boot_command_line, " ", COMMAND_LINE_SIZE);
+		strlcat(boot_command_line, arcs_cmdline, COMMAND_LINE_SIZE);
+	}
 #endif
-#else
-	strlcpy(boot_command_line, arcs_cmdline, COMMAND_LINE_SIZE);
 #endif
 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 
@@ -675,6 +765,15 @@ static void __init arch_mem_init(char **cmdline_p)
 	sparse_init();
 	plat_swiotlb_setup();
 	paging_init();
+
+	dma_contiguous_reserve(PFN_PHYS(max_low_pfn));
+	/* Tell bootmem about cma reserved memblock section */
+	for_each_memblock(reserved, reg)
+		if (reg->size != 0)
+			reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
+
+	reserve_bootmem_region(__pa_symbol(&__nosave_begin),
+			__pa_symbol(&__nosave_end)); /* Reserve for hibernation */
 }
 
 static void __init resource_init(void)
@@ -701,21 +800,23 @@ static void __init resource_init(void)
 			end = HIGHMEM_START - 1;
 
 		res = alloc_bootmem(sizeof(struct resource));
+
+		res->start = start;
+		res->end = end;
+		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+
 		switch (boot_mem_map.map[i].type) {
 		case BOOT_MEM_RAM:
 		case BOOT_MEM_INIT_RAM:
 		case BOOT_MEM_ROM_DATA:
 			res->name = "System RAM";
+			res->flags |= IORESOURCE_SYSRAM;
 			break;
 		case BOOT_MEM_RESERVED:
 		default:
 			res->name = "reserved";
 		}
 
-		res->start = start;
-		res->end = end;
-
-		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
 		request_resource(&iomem_resource, res);
 
 		/*
@@ -751,8 +852,10 @@ static inline void prefill_possible_map(void) {}
 void __init setup_arch(char **cmdline_p)
 {
 	cpu_probe();
+	mips_cm_probe();
 	prom_init();
 
+	setup_early_fdc_console();
 #ifdef CONFIG_EARLY_PRINTK
 	setup_early_printk();
 #endif
@@ -778,6 +881,10 @@ void __init setup_arch(char **cmdline_p)
 
 unsigned long kernelsp[NR_CPUS];
 unsigned long fw_arg0, fw_arg1, fw_arg2, fw_arg3;
+
+#ifdef CONFIG_USE_OF
+unsigned long fw_passed_dtb;
+#endif
 
 #ifdef CONFIG_DEBUG_FS
 struct dentry *mips_debugfs_dir;

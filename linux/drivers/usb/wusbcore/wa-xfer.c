@@ -459,14 +459,25 @@ static void __wa_xfer_abort_cb(struct urb *urb)
 			__func__, urb->status);
 		if (xfer) {
 			unsigned long flags;
-			int done;
+			int done, seg_index = 0;
 			struct wa_rpipe *rpipe = xfer->ep->hcpriv;
 
 			dev_err(dev, "%s: cleaning up xfer %p ID 0x%08X.\n",
 				__func__, xfer, wa_xfer_id(xfer));
 			spin_lock_irqsave(&xfer->lock, flags);
-			/* mark all segs as aborted. */
-			wa_complete_remaining_xfer_segs(xfer, 0,
+			/* skip done segs. */
+			while (seg_index < xfer->segs) {
+				struct wa_seg *seg = xfer->seg[seg_index];
+
+				if ((seg->status == WA_SEG_DONE) ||
+					(seg->status == WA_SEG_ERROR)) {
+					++seg_index;
+				} else {
+					break;
+				}
+			}
+			/* mark remaining segs as aborted. */
+			wa_complete_remaining_xfer_segs(xfer, seg_index,
 				WA_SEG_ABORTED);
 			done = __wa_xfer_is_done(xfer);
 			spin_unlock_irqrestore(&xfer->lock, flags);
@@ -2854,10 +2865,8 @@ int wa_dti_start(struct wahc *wa)
 		goto out;
 
 	wa->dti_urb = usb_alloc_urb(0, GFP_KERNEL);
-	if (wa->dti_urb == NULL) {
-		dev_err(dev, "Can't allocate DTI URB\n");
+	if (wa->dti_urb == NULL)
 		goto error_dti_urb_alloc;
-	}
 	usb_fill_bulk_urb(
 		wa->dti_urb, wa->usb_dev,
 		usb_rcvbulkpipe(wa->usb_dev, 0x80 | dti_epd->bEndpointAddress),

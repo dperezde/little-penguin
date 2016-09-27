@@ -20,6 +20,7 @@
 #include <linux/spi/flash.h>
 #include <asm/bootinfo.h>
 #include <asm/mach-au1x00/au1000.h>
+#include <asm/mach-au1x00/gpio-au1000.h>
 #include <asm/mach-au1x00/au1xxx_eth.h>
 #include <asm/mach-au1x00/au1xxx_dbdma.h>
 #include <asm/mach-au1x00/au1xxx_psc.h>
@@ -34,12 +35,9 @@ static void __init db1550_hw_setup(void)
 	void __iomem *base;
 	unsigned long v;
 
-	/* complete SPI setup: link psc0_intclk to a 48MHz source,
-	 * and assign GPIO16 to PSC0_SYNC1 (SPI cs# line) as well as PSC1_SYNC
-	 * for AC97 on PB1550.
+	/* complete pin setup: assign GPIO16 to PSC0_SYNC1 (SPI cs# line)
+	 * as well as PSC1_SYNC for AC97 on PB1550.
 	 */
-	v = alchemy_rdsys(AU1000_SYS_CLKSRC);
-	alchemy_wrsys(v | 0x000001e0, AU1000_SYS_CLKSRC);
 	v = alchemy_rdsys(AU1000_SYS_PINFUNC);
 	alchemy_wrsys(v | 1 | SYS_PF_PSC1_S1, AU1000_SYS_PINFUNC);
 
@@ -130,7 +128,7 @@ static struct i2c_board_info db1550_i2c_devs[] __initdata = {
 static void au1550_nand_cmd_ctrl(struct mtd_info *mtd, int cmd,
 				 unsigned int ctrl)
 {
-	struct nand_chip *this = mtd->priv;
+	struct nand_chip *this = mtd_to_nand(mtd);
 	unsigned long ioaddr = (unsigned long)this->IO_ADDR_W;
 
 	ioaddr &= 0xffffff00;
@@ -516,7 +514,7 @@ static void __init db1550_devices(void)
 		AU1000_PCMCIA_MEM_PHYS_ADDR  + 0x000400000 - 1,
 		AU1000_PCMCIA_IO_PHYS_ADDR,
 		AU1000_PCMCIA_IO_PHYS_ADDR   + 0x000010000 - 1,
-		AU1550_GPIO3_INT, AU1550_GPIO0_INT,
+		AU1550_GPIO3_INT, 0,
 		/*AU1550_GPIO21_INT*/0, 0, 0);
 
 	db1x_register_pcmcia_socket(
@@ -526,7 +524,7 @@ static void __init db1550_devices(void)
 		AU1000_PCMCIA_MEM_PHYS_ADDR  + 0x004400000 - 1,
 		AU1000_PCMCIA_IO_PHYS_ADDR   + 0x004000000,
 		AU1000_PCMCIA_IO_PHYS_ADDR   + 0x004010000 - 1,
-		AU1550_GPIO5_INT, AU1550_GPIO1_INT,
+		AU1550_GPIO5_INT, 1,
 		/*AU1550_GPIO22_INT*/0, 0, 1);
 
 	platform_device_register(&db1550_nand_dev);
@@ -586,11 +584,13 @@ int __init db1550_dev_setup(void)
 
 	c = clk_get(NULL, "psc0_intclk");
 	if (!IS_ERR(c)) {
+		clk_set_rate(c, 50000000);
 		clk_prepare_enable(c);
 		clk_put(c);
 	}
 	c = clk_get(NULL, "psc2_intclk");
 	if (!IS_ERR(c)) {
+		clk_set_rate(c, db1550_spi_platdata.mainclk_hz);
 		clk_prepare_enable(c);
 		clk_put(c);
 	}

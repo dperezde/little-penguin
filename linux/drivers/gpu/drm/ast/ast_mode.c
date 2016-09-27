@@ -31,6 +31,7 @@
 #include <drm/drmP.h>
 #include <drm/drm_crtc.h>
 #include <drm/drm_crtc_helper.h>
+#include <drm/drm_plane_helper.h>
 #include "ast_drv.h"
 
 #include "ast_tables.h"
@@ -80,6 +81,8 @@ static bool ast_get_vbios_mode_info(struct drm_crtc *crtc, struct drm_display_mo
 	struct ast_private *ast = crtc->dev->dev_private;
 	u32 refresh_rate_index = 0, mode_id, color_index, refresh_rate;
 	u32 hborder, vborder;
+	bool check_sync;
+	struct ast_vbios_enhtable *best = NULL;
 
 	switch (crtc->primary->fb->bits_per_pixel) {
 	case 8:
@@ -141,14 +144,34 @@ static bool ast_get_vbios_mode_info(struct drm_crtc *crtc, struct drm_display_mo
 	}
 
 	refresh_rate = drm_mode_vrefresh(mode);
-	while (vbios_mode->enh_table->refresh_rate < refresh_rate) {
-		vbios_mode->enh_table++;
-		if ((vbios_mode->enh_table->refresh_rate > refresh_rate) ||
-		    (vbios_mode->enh_table->refresh_rate == 0xff)) {
-			vbios_mode->enh_table--;
-			break;
+	check_sync = vbios_mode->enh_table->flags & WideScreenMode;
+	do {
+		struct ast_vbios_enhtable *loop = vbios_mode->enh_table;
+
+		while (loop->refresh_rate != 0xff) {
+			if ((check_sync) &&
+			    (((mode->flags & DRM_MODE_FLAG_NVSYNC)  &&
+			      (loop->flags & PVSync))  ||
+			     ((mode->flags & DRM_MODE_FLAG_PVSYNC)  &&
+			      (loop->flags & NVSync))  ||
+			     ((mode->flags & DRM_MODE_FLAG_NHSYNC)  &&
+			      (loop->flags & PHSync))  ||
+			     ((mode->flags & DRM_MODE_FLAG_PHSYNC)  &&
+			      (loop->flags & NHSync)))) {
+				loop++;
+				continue;
+			}
+			if (loop->refresh_rate <= refresh_rate
+			    && (!best || loop->refresh_rate > best->refresh_rate))
+				best = loop;
+			loop++;
 		}
-	}
+		if (best || !check_sync)
+			break;
+		check_sync = 0;
+	} while (1);
+	if (best)
+		vbios_mode->enh_table = best;
 
 	hborder = (vbios_mode->enh_table->flags & HBorder) ? 8 : 0;
 	vborder = (vbios_mode->enh_table->flags & VBorder) ? 8 : 0;
@@ -419,8 +442,10 @@ static void ast_set_sync_reg(struct drm_device *dev, struct drm_display_mode *mo
 	struct ast_private *ast = dev->dev_private;
 	u8 jreg;
 
-	jreg = ast_io_read8(ast, AST_IO_MISC_PORT_READ);
-	jreg |= (vbios_mode->enh_table->flags & SyncNN);
+	jreg  = ast_io_read8(ast, AST_IO_MISC_PORT_READ);
+	jreg &= ~0xC0;
+	if (vbios_mode->enh_table->flags & NVSync) jreg |= 0x80;
+	if (vbios_mode->enh_table->flags & NHSync) jreg |= 0x40;
 	ast_io_write8(ast, AST_IO_MISC_PORT_WRITE, jreg);
 }
 
@@ -472,13 +497,6 @@ static void ast_crtc_dpms(struct drm_crtc *crtc, int mode)
 	}
 }
 
-static bool ast_crtc_mode_fixup(struct drm_crtc *crtc,
-				const struct drm_display_mode *mode,
-				struct drm_display_mode *adjusted_mode)
-{
-	return true;
-}
-
 /* ast is different - we will force move buffers out of VRAM */
 static int ast_crtc_do_set_base(struct drm_crtc *crtc,
 				struct drm_framebuffer *fb,
@@ -522,6 +540,8 @@ static int ast_crtc_do_set_base(struct drm_crtc *crtc,
 		ret = ttm_bo_kmap(&bo->bo, 0, bo->bo.num_pages, &bo->kmap);
 		if (ret)
 			DRM_ERROR("failed to kmap fbcon\n");
+		else
+			ast_fbdev_set_base(ast, gpu_addr);
 	}
 	ast_bo_unreserve(bo);
 
@@ -590,7 +610,6 @@ static void ast_crtc_commit(struct drm_crtc *crtc)
 
 static const struct drm_crtc_helper_funcs ast_crtc_helper_funcs = {
 	.dpms = ast_crtc_dpms,
-	.mode_fixup = ast_crtc_mode_fixup,
 	.mode_set = ast_crtc_mode_set,
 	.mode_set_base = ast_crtc_mode_set_base,
 	.disable = ast_crtc_disable,
@@ -605,19 +624,21 @@ static void ast_crtc_reset(struct drm_crtc *crtc)
 
 }
 
-static void ast_crtc_gamma_set(struct drm_crtc *crtc, u16 *red, u16 *green,
-				 u16 *blue, uint32_t start, uint32_t size)
+static int ast_crtc_gamma_set(struct drm_crtc *crtc, u16 *red, u16 *green,
+			      u16 *blue, uint32_t size)
 {
 	struct ast_crtc *ast_crtc = to_ast_crtc(crtc);
-	int end = (start + size > 256) ? 256 : start + size, i;
+	int i;
 
 	/* userspace palettes are always correct as is */
-	for (i = start; i < end; i++) {
+	for (i = 0; i < size; i++) {
 		ast_crtc->lut_r[i] = red[i] >> 8;
 		ast_crtc->lut_g[i] = green[i] >> 8;
 		ast_crtc->lut_b[i] = blue[i] >> 8;
 	}
 	ast_crtc_load_lut(crtc);
+
+	return 0;
 }
 
 
@@ -683,13 +704,6 @@ static void ast_encoder_dpms(struct drm_encoder *encoder, int mode)
 
 }
 
-static bool ast_mode_fixup(struct drm_encoder *encoder,
-			   const struct drm_display_mode *mode,
-			   struct drm_display_mode *adjusted_mode)
-{
-	return true;
-}
-
 static void ast_encoder_mode_set(struct drm_encoder *encoder,
 			       struct drm_display_mode *mode,
 			       struct drm_display_mode *adjusted_mode)
@@ -709,7 +723,6 @@ static void ast_encoder_commit(struct drm_encoder *encoder)
 
 static const struct drm_encoder_helper_funcs ast_enc_helper_funcs = {
 	.dpms = ast_encoder_dpms,
-	.mode_fixup = ast_mode_fixup,
 	.prepare = ast_encoder_prepare,
 	.commit = ast_encoder_commit,
 	.mode_set = ast_encoder_mode_set,
@@ -724,7 +737,7 @@ static int ast_encoder_init(struct drm_device *dev)
 		return -ENOMEM;
 
 	drm_encoder_init(dev, &ast_encoder->base, &ast_enc_funcs,
-			 DRM_MODE_ENCODER_DAC);
+			 DRM_MODE_ENCODER_DAC, NULL);
 	drm_encoder_helper_add(&ast_encoder->base, &ast_enc_helper_funcs);
 
 	ast_encoder->base.possible_crtcs = 1;
@@ -1080,8 +1093,8 @@ static u32 copy_cursor_image(u8 *src, u8 *dst, int width, int height)
 			srcdata32[1].ul = *((u32 *)(srcxor + 4)) & 0xf0f0f0f0;
 			data32.b[0] = srcdata32[0].b[1] | (srcdata32[0].b[0] >> 4);
 			data32.b[1] = srcdata32[0].b[3] | (srcdata32[0].b[2] >> 4);
-			data32.b[2] = srcdata32[0].b[1] | (srcdata32[1].b[0] >> 4);
-			data32.b[3] = srcdata32[0].b[3] | (srcdata32[1].b[2] >> 4);
+			data32.b[2] = srcdata32[1].b[1] | (srcdata32[1].b[0] >> 4);
+			data32.b[3] = srcdata32[1].b[3] | (srcdata32[1].b[2] >> 4);
 
 			writel(data32.ul, dstxor);
 			csum += data32.ul;
@@ -1130,7 +1143,7 @@ static int ast_cursor_set(struct drm_crtc *crtc,
 	if (width > AST_MAX_HWC_WIDTH || height > AST_MAX_HWC_HEIGHT)
 		return -EINVAL;
 
-	obj = drm_gem_object_lookup(crtc->dev, file_priv, handle);
+	obj = drm_gem_object_lookup(file_priv, handle);
 	if (!obj) {
 		DRM_ERROR("Cannot find cursor object %x for crtc\n", handle);
 		return -ENOENT;

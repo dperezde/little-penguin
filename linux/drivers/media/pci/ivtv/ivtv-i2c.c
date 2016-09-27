@@ -63,7 +63,7 @@
 #include "ivtv-cards.h"
 #include "ivtv-gpio.h"
 #include "ivtv-i2c.h"
-#include <media/cx25840.h>
+#include <media/drv-intf/cx25840.h>
 
 /* i2c implementation for cx23415/6 chip, ivtv project.
  * Author: Kevin Thayer (nufan_wfk at yahoo.com)
@@ -625,7 +625,7 @@ static u32 ivtv_functionality(struct i2c_adapter *adap)
 	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL;
 }
 
-static struct i2c_algorithm ivtv_algo = {
+static const struct i2c_algorithm ivtv_algo = {
 	.master_xfer   = ivtv_xfer,
 	.functionality = ivtv_functionality,
 };

@@ -11,11 +11,6 @@
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
- *
- *
  ******************************************************************************/
 #ifndef __RTW_CMD_H_
 #define __RTW_CMD_H_
@@ -44,8 +39,8 @@ struct cmd_obj {
 };
 
 struct cmd_priv {
-	struct semaphore cmd_queue_sema;
-	struct semaphore terminate_cmdthread_sema;
+	struct completion cmd_queue_comp;
+	struct completion terminate_cmdthread_comp;
 	struct __queue cmd_queue;
 	u8 cmdthd_running;
 	struct adapter *padapter;
@@ -212,34 +207,6 @@ struct set_assocsta_parm {
 struct set_assocsta_rsp {
 	u8	cam_id;
 	u8	rsvd[3];
-};
-
-/*
-	Caller Ad-Hoc/AP
-
-	Command mode
-
-	This is to force fw to del an sta_data entry per driver's request
-
-	FW will invalidate the cam entry associated with it.
-
-*/
-struct del_assocsta_parm {
-	u8	addr[ETH_ALEN];
-};
-
-/*
-Caller Mode: AP/Ad-HoC(M)
-
-Notes: To notify fw that given staid has changed its power state
-
-Command Mode
-
-*/
-struct setstapwrstate_parm {
-	u8	staid;
-	u8	status;
-	u8	hwaddr[6];
 };
 
 /*

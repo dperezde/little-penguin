@@ -128,7 +128,8 @@ static int bochs_bo_verify_access(struct ttm_buffer_object *bo,
 {
 	struct bochs_bo *bochsbo = bochs_bo(bo);
 
-	return drm_vma_node_verify_access(&bochsbo->gem.vma_node, filp);
+	return drm_vma_node_verify_access(&bochsbo->gem.vma_node,
+					  filp->private_data);
 }
 
 static int bochs_ttm_io_mem_reserve(struct ttm_bo_device *bdev,
@@ -165,15 +166,6 @@ static void bochs_ttm_io_mem_free(struct ttm_bo_device *bdev,
 {
 }
 
-static int bochs_bo_move(struct ttm_buffer_object *bo,
-			 bool evict, bool interruptible,
-			 bool no_wait_gpu,
-			 struct ttm_mem_reg *new_mem)
-{
-	return ttm_bo_move_memcpy(bo, evict, no_wait_gpu, new_mem);
-}
-
-
 static void bochs_ttm_backend_destroy(struct ttm_tt *tt)
 {
 	ttm_tt_fini(tt);
@@ -208,10 +200,12 @@ struct ttm_bo_driver bochs_bo_driver = {
 	.ttm_tt_unpopulate = ttm_pool_unpopulate,
 	.init_mem_type = bochs_bo_init_mem_type,
 	.evict_flags = bochs_bo_evict_flags,
-	.move = bochs_bo_move,
+	.move = NULL,
 	.verify_access = bochs_bo_verify_access,
 	.io_mem_reserve = &bochs_ttm_io_mem_reserve,
 	.io_mem_free = &bochs_ttm_io_mem_free,
+	.lru_tail = &ttm_bo_default_lru_tail,
+	.swap_lru_tail = &ttm_bo_default_swap_lru_tail,
 };
 
 int bochs_mm_init(struct bochs_device *bochs)
@@ -257,20 +251,26 @@ void bochs_mm_fini(struct bochs_device *bochs)
 
 static void bochs_ttm_placement(struct bochs_bo *bo, int domain)
 {
+	unsigned i;
 	u32 c = 0;
-	bo->placement.fpfn = 0;
-	bo->placement.lpfn = 0;
 	bo->placement.placement = bo->placements;
 	bo->placement.busy_placement = bo->placements;
 	if (domain & TTM_PL_FLAG_VRAM) {
-		bo->placements[c++] = TTM_PL_FLAG_WC | TTM_PL_FLAG_UNCACHED
+		bo->placements[c++].flags = TTM_PL_FLAG_WC
+			| TTM_PL_FLAG_UNCACHED
 			| TTM_PL_FLAG_VRAM;
 	}
 	if (domain & TTM_PL_FLAG_SYSTEM) {
-		bo->placements[c++] = TTM_PL_MASK_CACHING | TTM_PL_FLAG_SYSTEM;
+		bo->placements[c++].flags = TTM_PL_MASK_CACHING
+			| TTM_PL_FLAG_SYSTEM;
 	}
 	if (!c) {
-		bo->placements[c++] = TTM_PL_MASK_CACHING | TTM_PL_FLAG_SYSTEM;
+		bo->placements[c++].flags = TTM_PL_MASK_CACHING
+			| TTM_PL_FLAG_SYSTEM;
+	}
+	for (i = 0; i < c; ++i) {
+		bo->placements[i].fpfn = 0;
+		bo->placements[i].lpfn = 0;
 	}
 	bo->placement.num_placement = c;
 	bo->placement.num_busy_placement = c;
@@ -294,7 +294,7 @@ int bochs_bo_pin(struct bochs_bo *bo, u32 pl_flag, u64 *gpu_addr)
 
 	bochs_ttm_placement(bo, pl_flag);
 	for (i = 0; i < bo->placement.num_placement; i++)
-		bo->placements[i] |= TTM_PL_FLAG_NO_EVICT;
+		bo->placements[i].flags |= TTM_PL_FLAG_NO_EVICT;
 	ret = ttm_bo_validate(&bo->bo, &bo->placement, false, false);
 	if (ret)
 		return ret;
@@ -319,7 +319,7 @@ int bochs_bo_unpin(struct bochs_bo *bo)
 		return 0;
 
 	for (i = 0; i < bo->placement.num_placement; i++)
-		bo->placements[i] &= ~TTM_PL_FLAG_NO_EVICT;
+		bo->placements[i].flags &= ~TTM_PL_FLAG_NO_EVICT;
 	ret = ttm_bo_validate(&bo->bo, &bo->placement, false, false);
 	if (ret)
 		return ret;
@@ -333,7 +333,7 @@ int bochs_mmap(struct file *filp, struct vm_area_struct *vma)
 	struct bochs_device *bochs;
 
 	if (unlikely(vma->vm_pgoff < DRM_FILE_PAGE_OFFSET))
-		return drm_mmap(filp, vma);
+		return -EINVAL;
 
 	file_priv = filp->private_data;
 	bochs = file_priv->minor->dev->dev_private;
@@ -371,7 +371,7 @@ static int bochs_bo_create(struct drm_device *dev, int size, int align,
 	ret = ttm_bo_init(&bochs->ttm.bdev, &bochsbo->bo, size,
 			  ttm_bo_type_device, &bochsbo->placement,
 			  align >> PAGE_SHIFT, false, NULL, acc_size,
-			  NULL, bochs_bo_ttm_destroy);
+			  NULL, NULL, bochs_bo_ttm_destroy);
 	if (ret)
 		return ret;
 
@@ -448,25 +448,17 @@ int bochs_dumb_mmap_offset(struct drm_file *file, struct drm_device *dev,
 			   uint32_t handle, uint64_t *offset)
 {
 	struct drm_gem_object *obj;
-	int ret;
 	struct bochs_bo *bo;
 
-	mutex_lock(&dev->struct_mutex);
-	obj = drm_gem_object_lookup(dev, file, handle);
-	if (obj == NULL) {
-		ret = -ENOENT;
-		goto out_unlock;
-	}
+	obj = drm_gem_object_lookup(file, handle);
+	if (obj == NULL)
+		return -ENOENT;
 
 	bo = gem_to_bochs_bo(obj);
 	*offset = bochs_bo_mmap_offset(bo);
 
-	drm_gem_object_unreference(obj);
-	ret = 0;
-out_unlock:
-	mutex_unlock(&dev->struct_mutex);
-	return ret;
-
+	drm_gem_object_unreference_unlocked(obj);
+	return 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -474,8 +466,8 @@ out_unlock:
 static void bochs_user_framebuffer_destroy(struct drm_framebuffer *fb)
 {
 	struct bochs_framebuffer *bochs_fb = to_bochs_framebuffer(fb);
-	if (bochs_fb->obj)
-		drm_gem_object_unreference_unlocked(bochs_fb->obj);
+
+	drm_gem_object_unreference_unlocked(bochs_fb->obj);
 	drm_framebuffer_cleanup(fb);
 	kfree(fb);
 }
@@ -486,7 +478,7 @@ static const struct drm_framebuffer_funcs bochs_fb_funcs = {
 
 int bochs_framebuffer_init(struct drm_device *dev,
 			   struct bochs_framebuffer *gfb,
-			   struct drm_mode_fb_cmd2 *mode_cmd,
+			   const struct drm_mode_fb_cmd2 *mode_cmd,
 			   struct drm_gem_object *obj)
 {
 	int ret;
@@ -504,7 +496,7 @@ int bochs_framebuffer_init(struct drm_device *dev,
 static struct drm_framebuffer *
 bochs_user_framebuffer_create(struct drm_device *dev,
 			      struct drm_file *filp,
-			      struct drm_mode_fb_cmd2 *mode_cmd)
+			      const struct drm_mode_fb_cmd2 *mode_cmd)
 {
 	struct drm_gem_object *obj;
 	struct bochs_framebuffer *bochs_fb;
@@ -520,7 +512,7 @@ bochs_user_framebuffer_create(struct drm_device *dev,
 	if (mode_cmd->pixel_format != DRM_FORMAT_XRGB8888)
 		return ERR_PTR(-ENOENT);
 
-	obj = drm_gem_object_lookup(dev, filp, mode_cmd->handles[0]);
+	obj = drm_gem_object_lookup(filp, mode_cmd->handles[0]);
 	if (obj == NULL)
 		return ERR_PTR(-ENOENT);
 

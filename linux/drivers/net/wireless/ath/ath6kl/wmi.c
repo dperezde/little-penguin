@@ -154,7 +154,7 @@ struct ath6kl_vif *ath6kl_get_vif_by_index(struct ath6kl *ar, u8 if_idx)
 }
 
 /*  Performs DIX to 802.3 encapsulation for transmit packets.
- *  Assumes the entire DIX header is contigous and that there is
+ *  Assumes the entire DIX header is contiguous and that there is
  *  enough room in the buffer for a 802.3 mac header and LLC+SNAP headers.
  */
 int ath6kl_wmi_dix_2_dot3(struct wmi *wmi, struct sk_buff *skb)
@@ -449,7 +449,7 @@ int ath6kl_wmi_dot11_hdr_remove(struct wmi *wmi, struct sk_buff *skb)
 
 /*
  * Performs 802.3 to DIX encapsulation for received packets.
- * Assumes the entire 802.3 header is contigous.
+ * Assumes the entire 802.3 header is contiguous.
  */
 int ath6kl_wmi_dot3_2_dix(struct sk_buff *skb)
 {
@@ -619,8 +619,7 @@ static int ath6kl_wmi_rx_probe_req_event_rx(struct wmi *wmi, u8 *datap, int len,
 		   dlen, freq, vif->probe_req_report);
 
 	if (vif->probe_req_report || vif->nw_type == AP_NETWORK)
-		cfg80211_rx_mgmt(&vif->wdev, freq, 0, ev->data, dlen, 0,
-				 GFP_ATOMIC);
+		cfg80211_rx_mgmt(&vif->wdev, freq, 0, ev->data, dlen, 0);
 
 	return 0;
 }
@@ -659,7 +658,7 @@ static int ath6kl_wmi_rx_action_event_rx(struct wmi *wmi, u8 *datap, int len,
 		return -EINVAL;
 	}
 	ath6kl_dbg(ATH6KL_DBG_WMI, "rx_action: len=%u freq=%u\n", dlen, freq);
-	cfg80211_rx_mgmt(&vif->wdev, freq, 0, ev->data, dlen, 0, GFP_ATOMIC);
+	cfg80211_rx_mgmt(&vif->wdev, freq, 0, ev->data, dlen, 0);
 
 	return 0;
 }
@@ -1093,7 +1092,6 @@ static int ath6kl_wmi_bssinfo_event_rx(struct wmi *wmi, u8 *datap, int len,
 	u8 *buf;
 	struct ieee80211_channel *channel;
 	struct ath6kl *ar = wmi->parent_dev;
-	struct ieee80211_mgmt *mgmt;
 	struct cfg80211_bss *bss;
 
 	if (len <= sizeof(struct wmi_bss_info_hdr2))
@@ -1139,39 +1137,15 @@ static int ath6kl_wmi_bssinfo_event_rx(struct wmi *wmi, u8 *datap, int len,
 		}
 	}
 
-	/*
-	 * In theory, use of cfg80211_inform_bss() would be more natural here
-	 * since we do not have the full frame. However, at least for now,
-	 * cfg80211 can only distinguish Beacon and Probe Response frames from
-	 * each other when using cfg80211_inform_bss_frame(), so let's build a
-	 * fake IEEE 802.11 header to be able to take benefit of this.
-	 */
-	mgmt = kmalloc(24 + len, GFP_ATOMIC);
-	if (mgmt == NULL)
-		return -EINVAL;
-
-	if (bih->frame_type == BEACON_FTYPE) {
-		mgmt->frame_control = cpu_to_le16(IEEE80211_FTYPE_MGMT |
-						  IEEE80211_STYPE_BEACON);
-		memset(mgmt->da, 0xff, ETH_ALEN);
-	} else {
-		struct net_device *dev = vif->ndev;
-
-		mgmt->frame_control = cpu_to_le16(IEEE80211_FTYPE_MGMT |
-						  IEEE80211_STYPE_PROBE_RESP);
-		memcpy(mgmt->da, dev->dev_addr, ETH_ALEN);
-	}
-	mgmt->duration = cpu_to_le16(0);
-	memcpy(mgmt->sa, bih->bssid, ETH_ALEN);
-	memcpy(mgmt->bssid, bih->bssid, ETH_ALEN);
-	mgmt->seq_ctrl = cpu_to_le16(0);
-
-	memcpy(&mgmt->u.beacon, buf, len);
-
-	bss = cfg80211_inform_bss_frame(ar->wiphy, channel, mgmt,
-					24 + len, (bih->snr - 95) * 100,
-					GFP_ATOMIC);
-	kfree(mgmt);
+	bss = cfg80211_inform_bss(ar->wiphy, channel,
+				  bih->frame_type == BEACON_FTYPE ?
+					CFG80211_BSS_FTYPE_BEACON :
+					CFG80211_BSS_FTYPE_PRESP,
+				  bih->bssid, get_unaligned_le64((__le64 *)buf),
+				  get_unaligned_le16(((__le16 *)buf) + 5),
+				  get_unaligned_le16(((__le16 *)buf) + 4),
+				  buf + 8 + 2 + 2, len - 8 - 2 - 2,
+				  (bih->snr - 95) * 100, GFP_ATOMIC);
 	if (bss == NULL)
 		return -ENOMEM;
 	cfg80211_put_bss(ar->wiphy, bss);
@@ -1609,6 +1583,11 @@ static int ath6kl_wmi_txe_notify_event_rx(struct wmi *wmi, u8 *datap, int len,
 
 	if (len < sizeof(*ev))
 		return -EINVAL;
+
+	if (vif->nw_type != INFRA_NETWORK ||
+	    !test_bit(ATH6KL_FW_CAPABILITY_TX_ERR_NOTIFY,
+		      vif->ar->fw_capabilities))
+		return -EOPNOTSUPP;
 
 	if (vif->sme_state != SME_CONNECTED)
 		return -ENOTCONN;
@@ -2069,7 +2048,7 @@ int ath6kl_wmi_beginscan_cmd(struct wmi *wmi, u8 if_idx,
 	sc->no_cck = cpu_to_le32(no_cck);
 	sc->num_ch = num_chan;
 
-	for (band = 0; band < IEEE80211_NUM_BANDS; band++) {
+	for (band = 0; band < NUM_NL80211_BANDS; band++) {
 		sband = ar->wiphy->bands[band];
 
 		if (!sband)
@@ -2565,8 +2544,7 @@ int ath6kl_wmi_create_pstream_cmd(struct wmi *wmi, u8 if_idx,
 	s32 nominal_phy = 0;
 	int ret;
 
-	if (!((params->user_pri < 8) &&
-	      (params->user_pri <= 0x7) &&
+	if (!((params->user_pri <= 0x7) &&
 	      (up_to_ac[params->user_pri & 0x7] == params->traffic_class) &&
 	      (params->traffic_direc == UPLINK_TRAFFIC ||
 	       params->traffic_direc == DNLINK_TRAFFIC ||
@@ -2791,10 +2769,10 @@ static int ath6kl_set_bitrate_mask64(struct wmi *wmi, u8 if_idx,
 	memset(&ratemask, 0, sizeof(ratemask));
 
 	/* only check 2.4 and 5 GHz bands, skip the rest */
-	for (band = 0; band <= IEEE80211_BAND_5GHZ; band++) {
+	for (band = 0; band <= NL80211_BAND_5GHZ; band++) {
 		/* copy legacy rate mask */
 		ratemask[band] = mask->control[band].legacy;
-		if (band == IEEE80211_BAND_5GHZ)
+		if (band == NL80211_BAND_5GHZ)
 			ratemask[band] =
 				mask->control[band].legacy << 4;
 
@@ -2820,9 +2798,9 @@ static int ath6kl_set_bitrate_mask64(struct wmi *wmi, u8 if_idx,
 		if (mode == WMI_RATES_MODE_11A ||
 		    mode == WMI_RATES_MODE_11A_HT20 ||
 		    mode == WMI_RATES_MODE_11A_HT40)
-			band = IEEE80211_BAND_5GHZ;
+			band = NL80211_BAND_5GHZ;
 		else
-			band = IEEE80211_BAND_2GHZ;
+			band = NL80211_BAND_2GHZ;
 		cmd->ratemask[mode] = cpu_to_le64(ratemask[band]);
 	}
 
@@ -2843,10 +2821,10 @@ static int ath6kl_set_bitrate_mask32(struct wmi *wmi, u8 if_idx,
 	memset(&ratemask, 0, sizeof(ratemask));
 
 	/* only check 2.4 and 5 GHz bands, skip the rest */
-	for (band = 0; band <= IEEE80211_BAND_5GHZ; band++) {
+	for (band = 0; band <= NL80211_BAND_5GHZ; band++) {
 		/* copy legacy rate mask */
 		ratemask[band] = mask->control[band].legacy;
-		if (band == IEEE80211_BAND_5GHZ)
+		if (band == NL80211_BAND_5GHZ)
 			ratemask[band] =
 				mask->control[band].legacy << 4;
 
@@ -2870,9 +2848,9 @@ static int ath6kl_set_bitrate_mask32(struct wmi *wmi, u8 if_idx,
 		if (mode == WMI_RATES_MODE_11A ||
 		    mode == WMI_RATES_MODE_11A_HT20 ||
 		    mode == WMI_RATES_MODE_11A_HT40)
-			band = IEEE80211_BAND_5GHZ;
+			band = NL80211_BAND_5GHZ;
 		else
-			band = IEEE80211_BAND_2GHZ;
+			band = NL80211_BAND_2GHZ;
 		cmd->ratemask[mode] = cpu_to_le32(ratemask[band]);
 	}
 
@@ -3195,7 +3173,7 @@ int ath6kl_wmi_set_keepalive_cmd(struct wmi *wmi, u8 if_idx,
 }
 
 int ath6kl_wmi_set_htcap_cmd(struct wmi *wmi, u8 if_idx,
-			     enum ieee80211_band band,
+			     enum nl80211_band band,
 			     struct ath6kl_htcap *htcap)
 {
 	struct sk_buff *skb;
@@ -3208,7 +3186,7 @@ int ath6kl_wmi_set_htcap_cmd(struct wmi *wmi, u8 if_idx,
 	cmd = (struct wmi_set_htcap_cmd *) skb->data;
 
 	/*
-	 * NOTE: Band in firmware matches enum ieee80211_band, it is unlikely
+	 * NOTE: Band in firmware matches enum nl80211_band, it is unlikely
 	 * this will be changed in firmware. If at all there is any change in
 	 * band value, the host needs to be fixed.
 	 */

@@ -29,6 +29,9 @@
 #include <linux/export.h>
 #include <linux/dma-buf.h>
 #include <drm/drmP.h>
+#include <drm/drm_gem.h>
+
+#include "drm_internal.h"
 
 /*
  * DMA-BUF/GEM Object references and lifetime overview:
@@ -306,29 +309,27 @@ static const struct dma_buf_ops drm_gem_prime_dmabuf_ops =  {
  * Drivers can implement @gem_prime_export and @gem_prime_import in terms of
  * simpler APIs by using the helper functions @drm_gem_prime_export and
  * @drm_gem_prime_import.  These functions implement dma-buf support in terms of
- * five lower-level driver callbacks:
+ * six lower-level driver callbacks:
  *
  * Export callbacks:
  *
- *  - @gem_prime_pin (optional): prepare a GEM object for exporting
- *
- *  - @gem_prime_get_sg_table: provide a scatter/gather table of pinned pages
- *
- *  - @gem_prime_vmap: vmap a buffer exported by your driver
- *
- *  - @gem_prime_vunmap: vunmap a buffer exported by your driver
+ *  * @gem_prime_pin (optional): prepare a GEM object for exporting
+ *  * @gem_prime_get_sg_table: provide a scatter/gather table of pinned pages
+ *  * @gem_prime_vmap: vmap a buffer exported by your driver
+ *  * @gem_prime_vunmap: vunmap a buffer exported by your driver
+ *  * @gem_prime_mmap (optional): mmap a buffer exported by your driver
  *
  * Import callback:
  *
- *  - @gem_prime_import_sg_table (import): produce a GEM object from another
+ *  * @gem_prime_import_sg_table (import): produce a GEM object from another
  *    driver's scatter/gather table
  */
 
 /**
- * drm_gem_prime_export - helper library implemention of the export callback
+ * drm_gem_prime_export - helper library implementation of the export callback
  * @dev: drm_device to export from
  * @obj: GEM object to export
- * @flags: flags like DRM_CLOEXEC
+ * @flags: flags like DRM_CLOEXEC and DRM_RDWR
  *
  * This is the implementation of the gem_prime_export functions for GEM drivers
  * using the PRIME helpers.
@@ -336,13 +337,17 @@ static const struct dma_buf_ops drm_gem_prime_dmabuf_ops =  {
 struct dma_buf *drm_gem_prime_export(struct drm_device *dev,
 				     struct drm_gem_object *obj, int flags)
 {
-	struct reservation_object *robj = NULL;
+	DEFINE_DMA_BUF_EXPORT_INFO(exp_info);
+
+	exp_info.ops = &drm_gem_prime_dmabuf_ops;
+	exp_info.size = obj->size;
+	exp_info.flags = flags;
+	exp_info.priv = obj;
 
 	if (dev->driver->gem_prime_res_obj)
-		robj = dev->driver->gem_prime_res_obj(obj);
+		exp_info.resv = dev->driver->gem_prime_res_obj(obj);
 
-	return dma_buf_export(obj, &drm_gem_prime_dmabuf_ops, obj->size,
-			      flags, robj);
+	return dma_buf_export(&exp_info);
 }
 EXPORT_SYMBOL(drm_gem_prime_export);
 
@@ -402,7 +407,7 @@ int drm_gem_prime_handle_to_fd(struct drm_device *dev,
 	struct dma_buf *dmabuf;
 
 	mutex_lock(&file_priv->prime.lock);
-	obj = drm_gem_object_lookup(dev, file_priv, handle);
+	obj = drm_gem_object_lookup(file_priv, handle);
 	if (!obj)  {
 		ret = -ENOENT;
 		goto out_unlock;
@@ -480,7 +485,7 @@ out_unlock:
 EXPORT_SYMBOL(drm_gem_prime_handle_to_fd);
 
 /**
- * drm_gem_prime_import - helper library implemention of the import callback
+ * drm_gem_prime_import - helper library implementation of the import callback
  * @dev: drm_device to import into
  * @dma_buf: dma-buf object to import
  *
@@ -495,9 +500,6 @@ struct drm_gem_object *drm_gem_prime_import(struct drm_device *dev,
 	struct drm_gem_object *obj;
 	int ret;
 
-	if (!dev->driver->gem_prime_import_sg_table)
-		return ERR_PTR(-EINVAL);
-
 	if (dma_buf->ops == &drm_gem_prime_dmabuf_ops) {
 		obj = dma_buf->priv;
 		if (obj->dev == dev) {
@@ -509,6 +511,9 @@ struct drm_gem_object *drm_gem_prime_import(struct drm_device *dev,
 			return obj;
 		}
 	}
+
+	if (!dev->driver->gem_prime_import_sg_table)
+		return ERR_PTR(-EINVAL);
 
 	attach = dma_buf_attach(dma_buf, dev->dev);
 	if (IS_ERR(attach))
@@ -522,7 +527,7 @@ struct drm_gem_object *drm_gem_prime_import(struct drm_device *dev,
 		goto fail_detach;
 	}
 
-	obj = dev->driver->gem_prime_import_sg_table(dev, dma_buf->size, sgt);
+	obj = dev->driver->gem_prime_import_sg_table(dev, attach, sgt);
 	if (IS_ERR(obj)) {
 		ret = PTR_ERR(obj);
 		goto fail_unmap;
@@ -588,7 +593,7 @@ int drm_gem_prime_fd_to_handle(struct drm_device *dev,
 		get_dma_buf(dma_buf);
 	}
 
-	/* drm_gem_handle_create_tail unlocks dev->object_name_lock. */
+	/* _handle_create_tail unconditionally unlocks dev->object_name_lock. */
 	ret = drm_gem_handle_create_tail(file_priv, obj, handle);
 	drm_gem_object_unreference_unlocked(obj);
 	if (ret)
@@ -596,10 +601,9 @@ int drm_gem_prime_fd_to_handle(struct drm_device *dev,
 
 	ret = drm_prime_add_buf_handle(&file_priv->prime,
 			dma_buf, *handle);
+	mutex_unlock(&file_priv->prime.lock);
 	if (ret)
 		goto fail;
-
-	mutex_unlock(&file_priv->prime.lock);
 
 	dma_buf_put(dma_buf);
 
@@ -610,11 +614,14 @@ fail:
 	 * to detach.. which seems ok..
 	 */
 	drm_gem_handle_delete(file_priv, *handle);
+	dma_buf_put(dma_buf);
+	return ret;
+
 out_unlock:
 	mutex_unlock(&dev->object_name_lock);
 out_put:
-	dma_buf_put(dma_buf);
 	mutex_unlock(&file_priv->prime.lock);
+	dma_buf_put(dma_buf);
 	return ret;
 }
 EXPORT_SYMBOL(drm_gem_prime_fd_to_handle);
@@ -623,7 +630,6 @@ int drm_prime_handle_to_fd_ioctl(struct drm_device *dev, void *data,
 				 struct drm_file *file_priv)
 {
 	struct drm_prime_handle *args = data;
-	uint32_t flags;
 
 	if (!drm_core_check_feature(dev, DRIVER_PRIME))
 		return -EINVAL;
@@ -632,14 +638,11 @@ int drm_prime_handle_to_fd_ioctl(struct drm_device *dev, void *data,
 		return -ENOSYS;
 
 	/* check flags are valid */
-	if (args->flags & ~DRM_CLOEXEC)
+	if (args->flags & ~(DRM_CLOEXEC | DRM_RDWR))
 		return -EINVAL;
 
-	/* we only want to pass DRM_CLOEXEC which is == O_CLOEXEC */
-	flags = args->flags & DRM_CLOEXEC;
-
 	return dev->driver->prime_handle_to_fd(dev, file_priv,
-			args->handle, flags, &args->fd);
+			args->handle, args->flags, &args->fd);
 }
 
 int drm_prime_fd_to_handle_ioctl(struct drm_device *dev, void *data,
@@ -666,7 +669,7 @@ int drm_prime_fd_to_handle_ioctl(struct drm_device *dev, void *data,
  * the driver is responsible for mapping the pages into the
  * importers address space for use with dma_buf itself.
  */
-struct sg_table *drm_prime_pages_to_sg(struct page **pages, int nr_pages)
+struct sg_table *drm_prime_pages_to_sg(struct page **pages, unsigned int nr_pages)
 {
 	struct sg_table *sg = NULL;
 	int ret;

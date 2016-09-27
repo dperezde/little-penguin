@@ -15,7 +15,6 @@
  *
  */
 
-#include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/pci-acpi.h>
 #include <linux/sched.h>
@@ -37,9 +36,6 @@
 #define DRIVER_VERSION "v1.0"
 #define DRIVER_AUTHOR "tom.l.nguyen@intel.com"
 #define DRIVER_DESC "Root Port Advanced Error Reporting Driver"
-MODULE_AUTHOR(DRIVER_AUTHOR);
-MODULE_DESCRIPTION(DRIVER_DESC);
-MODULE_LICENSE("GPL");
 
 static int aer_probe(struct pcie_device *dev);
 static void aer_remove(struct pcie_device *dev);
@@ -70,7 +66,7 @@ static int pcie_aer_disable;
 
 void pci_no_aer(void)
 {
-	pcie_aer_disable = 1;	/* has priority over 'forceload' */
+	pcie_aer_disable = 1;
 }
 
 bool pci_aer_available(void)
@@ -262,7 +258,6 @@ static struct aer_rpc *aer_alloc_rpc(struct pcie_device *dev)
 	rpc->rpd = dev;
 	INIT_WORK(&rpc->dpc_handler, aer_isr);
 	mutex_init(&rpc->rpc_mutex);
-	init_waitqueue_head(&rpc->wait_release);
 
 	/* Use PCIe bus function to store rpc into PCIe device */
 	set_service_data(dev, rpc);
@@ -285,8 +280,7 @@ static void aer_remove(struct pcie_device *dev)
 		if (rpc->isr)
 			free_irq(dev->irq, dev);
 
-		wait_event(rpc->wait_release, rpc->prod_idx == rpc->cons_idx);
-
+		flush_work(&rpc->dpc_handler);
 		aer_disable_rootport(rpc);
 		kfree(rpc);
 		set_service_data(dev, NULL);
@@ -305,11 +299,6 @@ static int aer_probe(struct pcie_device *dev)
 	int status;
 	struct aer_rpc *rpc;
 	struct device *device = &dev->device;
-
-	/* Init */
-	status = aer_init(dev);
-	if (status)
-		return status;
 
 	/* Alloc rpc data structure */
 	rpc = aer_alloc_rpc(dev);
@@ -419,16 +408,4 @@ static int __init aer_service_init(void)
 		return -ENXIO;
 	return pcie_port_service_register(&aerdriver);
 }
-
-/**
- * aer_service_exit - unregister AER root service driver
- *
- * Invoked when AER root service driver is unloaded.
- */
-static void __exit aer_service_exit(void)
-{
-	pcie_port_service_unregister(&aerdriver);
-}
-
-module_init(aer_service_init);
-module_exit(aer_service_exit);
+device_initcall(aer_service_init);

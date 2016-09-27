@@ -5,7 +5,7 @@
  *
  * Author: Frank Haverkamp <haver@linux.vnet.ibm.com>
  * Author: Joerg-Stephan Vogt <jsvogt@de.ibm.com>
- * Author: Michael Jung <mijung@de.ibm.com>
+ * Author: Michael Jung <mijung@gmx.net>
  * Author: Michael Ruettger <michael@ibmra.de>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -45,10 +45,10 @@
 MODULE_AUTHOR("Frank Haverkamp <haver@linux.vnet.ibm.com>");
 MODULE_AUTHOR("Michael Ruettger <michael@ibmra.de>");
 MODULE_AUTHOR("Joerg-Stephan Vogt <jsvogt@de.ibm.com>");
-MODULE_AUTHOR("Michal Jung <mijung@de.ibm.com>");
+MODULE_AUTHOR("Michael Jung <mijung@gmx.net>");
 
 MODULE_DESCRIPTION("GenWQE Card");
-MODULE_VERSION(DRV_VERS_STRING);
+MODULE_VERSION(DRV_VERSION);
 MODULE_LICENSE("GPL");
 
 static char genwqe_driver_name[] = GENWQE_DEVNAME;
@@ -182,7 +182,7 @@ static void genwqe_dev_free(struct genwqe_dev *cd)
  */
 static int genwqe_bus_reset(struct genwqe_dev *cd)
 {
-	int bars, rc = 0;
+	int rc = 0;
 	struct pci_dev *pci_dev = cd->pci_dev;
 	void __iomem *mmio;
 
@@ -193,8 +193,7 @@ static int genwqe_bus_reset(struct genwqe_dev *cd)
 	cd->mmio = NULL;
 	pci_iounmap(pci_dev, mmio);
 
-	bars = pci_select_bars(pci_dev, IORESOURCE_MEM);
-	pci_release_selected_regions(pci_dev, bars);
+	pci_release_mem_regions(pci_dev);
 
 	/*
 	 * Firmware/BIOS might change memory mapping during bus reset.
@@ -218,7 +217,7 @@ static int genwqe_bus_reset(struct genwqe_dev *cd)
 			    GENWQE_INJECT_GFIR_FATAL |
 			    GENWQE_INJECT_GFIR_INFO);
 
-	rc = pci_request_selected_regions(pci_dev, bars, genwqe_driver_name);
+	rc = pci_request_mem_regions(pci_dev, genwqe_driver_name);
 	if (rc) {
 		dev_err(&pci_dev->dev,
 			"[%s] err: request bars failed (%d)\n", __func__, rc);
@@ -346,8 +345,13 @@ static bool genwqe_setup_vf_jtimer(struct genwqe_dev *cd)
 	unsigned int vf;
 	u32 T = genwqe_T_psec(cd);
 	u64 x;
+	int totalvfs;
 
-	for (vf = 0; vf < pci_sriov_get_totalvfs(pci_dev); vf++) {
+	totalvfs = pci_sriov_get_totalvfs(pci_dev);
+	if (totalvfs <= 0)
+		return false;
+
+	for (vf = 0; vf < totalvfs; vf++) {
 
 		if (cd->vf_jobtimeout_msec[vf] == 0)
 			continue;
@@ -383,8 +387,9 @@ static int genwqe_ffdc_buffs_alloc(struct genwqe_dev *cd)
 
 		/* currently support only the debug units mentioned here */
 		cd->ffdc[type].entries = e;
-		cd->ffdc[type].regs = kmalloc(e * sizeof(struct genwqe_reg),
-					      GFP_KERNEL);
+		cd->ffdc[type].regs =
+			kmalloc_array(e, sizeof(struct genwqe_reg),
+				      GFP_KERNEL);
 		/*
 		 * regs == NULL is ok, the using code treats this as no regs,
 		 * Printing warning is ok in this case.
@@ -723,8 +728,8 @@ static u64 genwqe_fir_checking(struct genwqe_dev *cd)
 				__genwqe_writeq(cd, sfir_addr, sfir);
 
 				dev_dbg(&pci_dev->dev,
-					"[HM] Clearing  2ndary FIR 0x%08x "
-					"with 0x%016llx\n", sfir_addr, sfir);
+					"[HM] Clearing  2ndary FIR 0x%08x with 0x%016llx\n",
+					sfir_addr, sfir);
 
 				/*
 				 * note, these cannot be error-Firs
@@ -740,9 +745,8 @@ static u64 genwqe_fir_checking(struct genwqe_dev *cd)
 				__genwqe_writeq(cd, fir_clr_addr, mask);
 
 				dev_dbg(&pci_dev->dev,
-					"[HM] Clearing primary FIR 0x%08x "
-					"with 0x%016llx\n", fir_clr_addr,
-					mask);
+					"[HM] Clearing primary FIR 0x%08x with 0x%016llx\n",
+					fir_clr_addr, mask);
 			}
 		}
 	}
@@ -1063,10 +1067,9 @@ static int genwqe_health_check_stop(struct genwqe_dev *cd)
  */
 static int genwqe_pci_setup(struct genwqe_dev *cd)
 {
-	int err, bars;
+	int err;
 	struct pci_dev *pci_dev = cd->pci_dev;
 
-	bars = pci_select_bars(pci_dev, IORESOURCE_MEM);
 	err = pci_enable_device_mem(pci_dev);
 	if (err) {
 		dev_err(&pci_dev->dev,
@@ -1075,7 +1078,7 @@ static int genwqe_pci_setup(struct genwqe_dev *cd)
 	}
 
 	/* Reserve PCI I/O and memory resources */
-	err = pci_request_selected_regions(pci_dev, bars, genwqe_driver_name);
+	err = pci_request_mem_regions(pci_dev, genwqe_driver_name);
 	if (err) {
 		dev_err(&pci_dev->dev,
 			"[%s] err: request bars failed (%d)\n", __func__, err);
@@ -1125,6 +1128,8 @@ static int genwqe_pci_setup(struct genwqe_dev *cd)
 	}
 
 	cd->num_vfs = pci_sriov_get_totalvfs(pci_dev);
+	if (cd->num_vfs < 0)
+		cd->num_vfs = 0;
 
 	err = genwqe_read_ids(cd);
 	if (err)
@@ -1135,7 +1140,7 @@ static int genwqe_pci_setup(struct genwqe_dev *cd)
  out_iounmap:
 	pci_iounmap(pci_dev, cd->mmio);
  out_release_resources:
-	pci_release_selected_regions(pci_dev, bars);
+	pci_release_mem_regions(pci_dev);
  err_disable_device:
 	pci_disable_device(pci_dev);
  err_out:
@@ -1147,14 +1152,12 @@ static int genwqe_pci_setup(struct genwqe_dev *cd)
  */
 static void genwqe_pci_remove(struct genwqe_dev *cd)
 {
-	int bars;
 	struct pci_dev *pci_dev = cd->pci_dev;
 
 	if (cd->mmio)
 		pci_iounmap(pci_dev, cd->mmio);
 
-	bars = pci_select_bars(pci_dev, IORESOURCE_MEM);
-	pci_release_selected_regions(pci_dev, bars);
+	pci_release_mem_regions(pci_dev);
 	pci_disable_device(pci_dev);
 }
 
@@ -1202,8 +1205,8 @@ static int genwqe_probe(struct pci_dev *pci_dev,
 		err = genwqe_health_check_start(cd);
 		if (err < 0) {
 			dev_err(&pci_dev->dev,
-				"err: cannot start health checking! "
-				"(err=%d)\n", err);
+				"err: cannot start health checking! (err=%d)\n",
+				err);
 			goto out_stop_services;
 		}
 	}
@@ -1313,11 +1316,14 @@ static void genwqe_err_resume(struct pci_dev *pci_dev)
 
 static int genwqe_sriov_configure(struct pci_dev *dev, int numvfs)
 {
+	int rc;
 	struct genwqe_dev *cd = dev_get_drvdata(&dev->dev);
 
 	if (numvfs > 0) {
 		genwqe_setup_vf_jtimer(cd);
-		pci_enable_sriov(dev, numvfs);
+		rc = pci_enable_sriov(dev, numvfs);
+		if (rc < 0)
+			return rc;
 		return numvfs;
 	}
 	if (numvfs == 0) {
@@ -1345,6 +1351,19 @@ static struct pci_driver genwqe_driver = {
 };
 
 /**
+ * genwqe_devnode() - Set default access mode for genwqe devices.
+ *
+ * Default mode should be rw for everybody. Do not change default
+ * device name.
+ */
+static char *genwqe_devnode(struct device *dev, umode_t *mode)
+{
+	if (mode)
+		*mode = 0666;
+	return NULL;
+}
+
+/**
  * genwqe_init_module() - Driver registration and initialization
  */
 static int __init genwqe_init_module(void)
@@ -1356,6 +1375,8 @@ static int __init genwqe_init_module(void)
 		pr_err("[%s] create class failed\n", __func__);
 		return -ENOMEM;
 	}
+
+	class_genwqe->devnode = genwqe_devnode;
 
 	debugfs_genwqe = debugfs_create_dir(GENWQE_DEVNAME, NULL);
 	if (!debugfs_genwqe) {

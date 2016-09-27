@@ -20,22 +20,20 @@ config SPARC
 	select HAVE_OPROFILE
 	select HAVE_ARCH_KGDB if !SMP || SPARC64
 	select HAVE_ARCH_TRACEHOOK
+	select HAVE_EXIT_THREAD
 	select SYSCTL_EXCEPTION_TRACE
-	select ARCH_WANT_OPTIONAL_GPIOLIB
-	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
 	select RTC_CLASS
 	select RTC_DRV_M48T59
-	select HAVE_DMA_ATTRS
+	select RTC_SYSTOHC
 	select HAVE_DMA_API_DEBUG
 	select HAVE_ARCH_JUMP_LABEL if SPARC64
 	select GENERIC_IRQ_SHOW
 	select ARCH_WANT_IPC_PARSE_VERSION
 	select GENERIC_PCI_IOMAP
 	select HAVE_NMI_WATCHDOG if SPARC64
-	select HAVE_BPF_JIT
+	select HAVE_CBPF_JIT
 	select HAVE_DEBUG_BUGVERBOSE
 	select GENERIC_SMP_IDLE_THREAD
-	select GENERIC_CMOS_UPDATE
 	select GENERIC_CLOCKEVENTS
 	select GENERIC_STRNCPY_FROM_USER
 	select GENERIC_STRNLEN_USER
@@ -43,6 +41,8 @@ config SPARC
 	select ODD_RT_SIGACTION
 	select OLD_SIGSUSPEND
 	select ARCH_HAS_SG_CHAIN
+	select CPU_NO_EFFICIENT_FFS
+	select HAVE_ARCH_HARDENED_USERCOPY
 
 config SPARC32
 	def_bool !64BIT
@@ -55,7 +55,6 @@ config SPARC64
 	def_bool 64BIT
 	select HAVE_FUNCTION_TRACER
 	select HAVE_FUNCTION_GRAPH_TRACER
-	select HAVE_FUNCTION_GRAPH_FP_TEST
 	select HAVE_KRETPROBES
 	select HAVE_KPROBES
 	select HAVE_RCU_TABLE_FREE if SMP
@@ -67,6 +66,7 @@ config SPARC64
 	select HAVE_SYSCALL_TRACEPOINTS
 	select HAVE_CONTEXT_TRACKING
 	select HAVE_DEBUG_KMEMLEAK
+	select SPARSE_IRQ
 	select RTC_DRV_CMOS
 	select RTC_DRV_BQ4802
 	select RTC_DRV_SUN4V
@@ -79,11 +79,15 @@ config SPARC64
 	select NO_BOOTMEM
 	select HAVE_ARCH_AUDITSYSCALL
 	select ARCH_SUPPORTS_ATOMIC_RMW
+	select HAVE_NMI
 
 config ARCH_DEFCONFIG
 	string
 	default "arch/sparc/configs/sparc32_defconfig" if SPARC32
 	default "arch/sparc/configs/sparc64_defconfig" if SPARC64
+
+config ARCH_PROC_KCORE_TEXT
+	def_bool y
 
 config IOMMU_HELPER
 	bool
@@ -94,10 +98,6 @@ config STACKTRACE_SUPPORT
 	default y if SPARC64
 
 config LOCKDEP_SUPPORT
-	bool
-	default y if SPARC64
-
-config HAVE_LATENCYTOP_SUPPORT
 	bool
 	default y if SPARC64
 
@@ -141,6 +141,10 @@ config GENERIC_ISA_DMA
 
 config ARCH_SUPPORTS_DEBUG_PAGEALLOC
 	def_bool y if SPARC64
+
+config PGTABLE_LEVELS
+	default 4 if 64BIT
+	default 3
 
 source "init/Kconfig"
 

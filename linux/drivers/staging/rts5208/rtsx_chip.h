@@ -101,7 +101,6 @@
 #define TRANSPORT_NO_SENSE	2  /* Command failed, no auto-sense    */
 #define TRANSPORT_ERROR		3   /* Transport bad (i.e. device dead) */
 
-
 /*-----------------------------------
     Start-Stop-Unit
 -----------------------------------*/
@@ -228,7 +227,6 @@
 #define ASCQ_LOAD_EJCT_ERR      0x00
 #define	ASCQ_WRITE_PROTECT	0x00
 
-
 struct sense_data_t {
 	unsigned char   err_code;	/* error code */
 	/* bit7 : valid */
@@ -268,22 +266,22 @@ struct sense_data_t {
 #define TRIG_DMA		(0x01 << 31)
 
 /* Bus interrupt pending register */
-#define CMD_DONE_INT		(1 << 31)
-#define DATA_DONE_INT		(1 << 30)
-#define TRANS_OK_INT		(1 << 29)
-#define TRANS_FAIL_INT		(1 << 28)
-#define XD_INT			(1 << 27)
-#define MS_INT			(1 << 26)
-#define SD_INT			(1 << 25)
-#define GPIO0_INT		(1 << 24)
-#define OC_INT			(1 << 23)
-#define SD_WRITE_PROTECT	(1 << 19)
-#define XD_EXIST		(1 << 18)
-#define MS_EXIST		(1 << 17)
-#define SD_EXIST		(1 << 16)
+#define CMD_DONE_INT		BIT(31)
+#define DATA_DONE_INT		BIT(30)
+#define TRANS_OK_INT		BIT(29)
+#define TRANS_FAIL_INT		BIT(28)
+#define XD_INT			BIT(27)
+#define MS_INT			BIT(26)
+#define SD_INT			BIT(25)
+#define GPIO0_INT		BIT(24)
+#define OC_INT			BIT(23)
+#define SD_WRITE_PROTECT	BIT(19)
+#define XD_EXIST		BIT(18)
+#define MS_EXIST		BIT(17)
+#define SD_EXIST		BIT(16)
 #define DELINK_INT		GPIO0_INT
-#define MS_OC_INT		(1 << 23)
-#define SD_OC_INT		(1 << 22)
+#define MS_OC_INT		BIT(23)
+#define SD_OC_INT		BIT(22)
 
 #define CARD_INT		(XD_INT | MS_INT | SD_INT)
 #define NEED_COMPLETE_INT	(DATA_DONE_INT | TRANS_OK_INT | TRANS_FAIL_INT)
@@ -305,14 +303,12 @@ struct sense_data_t {
 #define MS_OC_INT_EN		(1 << 23)
 #define SD_OC_INT_EN		(1 << 22)
 
-
 #define READ_REG_CMD		0
 #define WRITE_REG_CMD		1
 #define CHECK_REG_CMD		2
 
 #define HOST_TO_DEVICE		0
 #define DEVICE_TO_HOST		1
-
 
 #define RTSX_RESV_BUF_LEN	4096
 #define HOST_CMDS_BUF_LEN	1024
@@ -331,7 +327,6 @@ struct sense_data_t {
 
 #define XD_FREE_TABLE_CNT	1200
 #define MS_FREE_TABLE_CNT	512
-
 
 /* Bit Operation */
 #define SET_BIT(data, idx)	((data) |= 1 << (idx))
@@ -617,7 +612,6 @@ struct spi_info {
 
 	int spi_clock;
 };
-
 
 #ifdef _MSG_TRACE
 struct trace_msg_t {
@@ -950,7 +944,6 @@ do {								\
 int rtsx_force_power_on(struct rtsx_chip *chip, u8 ctl);
 int rtsx_force_power_down(struct rtsx_chip *chip, u8 ctl);
 
-void rtsx_disable_card_int(struct rtsx_chip *chip);
 void rtsx_enable_card_int(struct rtsx_chip *chip);
 void rtsx_enable_bus_int(struct rtsx_chip *chip);
 void rtsx_disable_bus_int(struct rtsx_chip *chip);
@@ -958,7 +951,6 @@ int rtsx_reset_chip(struct rtsx_chip *chip);
 int rtsx_init_chip(struct rtsx_chip *chip);
 void rtsx_release_chip(struct rtsx_chip *chip);
 void rtsx_polling_func(struct rtsx_chip *chip);
-void rtsx_undo_delink(struct rtsx_chip *chip);
 void rtsx_stop_cmd(struct rtsx_chip *chip, int card);
 int rtsx_write_register(struct rtsx_chip *chip, u16 addr, u8 mask, u8 data);
 int rtsx_read_register(struct rtsx_chip *chip, u16 addr, u8 *data);
@@ -975,7 +967,6 @@ int rtsx_read_efuse(struct rtsx_chip *chip, u8 addr, u8 *val);
 int rtsx_write_efuse(struct rtsx_chip *chip, u8 addr, u8 val);
 int rtsx_clr_phy_reg_bit(struct rtsx_chip *chip, u8 reg, u8 bit);
 int rtsx_set_phy_reg_bit(struct rtsx_chip *chip, u8 reg, u8 bit);
-int rtsx_check_link_ready(struct rtsx_chip *chip);
 void rtsx_enter_ss(struct rtsx_chip *chip);
 void rtsx_exit_ss(struct rtsx_chip *chip);
 int rtsx_pre_handle_interrupt(struct rtsx_chip *chip);
@@ -987,21 +978,5 @@ void rtsx_disable_aspm(struct rtsx_chip *chip);
 int rtsx_read_ppbuf(struct rtsx_chip *chip, u8 *buf, int buf_len);
 int rtsx_write_ppbuf(struct rtsx_chip *chip, u8 *buf, int buf_len);
 int rtsx_check_chip_exist(struct rtsx_chip *chip);
-
-#define RTSX_WRITE_REG(chip, addr, mask, data)				\
-	do {								\
-		int retval = rtsx_write_register((chip), (addr), (mask), (data)); \
-		if (retval != STATUS_SUCCESS) {				\
-			TRACE_RET((chip), retval);			\
-		}							\
-	} while (0)
-
-#define RTSX_READ_REG(chip, addr, data)					\
-	do {								\
-		int retval = rtsx_read_register((chip), (addr), (data)); \
-		if (retval != STATUS_SUCCESS) {				\
-			TRACE_RET((chip), retval);			\
-		}							\
-	} while (0)
 
 #endif  /* __REALTEK_RTSX_CHIP_H */

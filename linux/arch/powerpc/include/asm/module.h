@@ -12,14 +12,21 @@
 #include <linux/list.h>
 #include <asm/bug.h>
 #include <asm-generic/module.h>
+#include <asm/elf_util.h>
 
+/* Both low and high 16 bits are added as SIGNED additions, so if low
+   16 bits has high bit set, high 16 bits must be adjusted.  These
+   macros do that (stolen from binutils). */
+#define PPC_LO(v) ((v) & 0xffff)
+#define PPC_HI(v) (((v) >> 16) & 0xffff)
+#define PPC_HA(v) PPC_HI ((v) + 0x8000)
 
 #ifndef __powerpc64__
 /*
  * Thanks to Paul M for explaining this.
  *
  * PPC can only do rel jumps += 32MB, and often the kernel and other
- * modules are furthur away than this.  So, we jump to a table of
+ * modules are further away than this.  So, we jump to a table of
  * trampolines attached to the module (the Procedure Linkage Table)
  * whenever that happens.
  */
@@ -33,8 +40,7 @@ struct ppc_plt_entry {
 
 struct mod_arch_specific {
 #ifdef __powerpc64__
-	unsigned int stubs_section;	/* Index of stubs section in module */
-	unsigned int toc_section;	/* What section is the TOC? */
+	struct elf_info elf_info;
 	bool toc_fixed;			/* Have we fixed up .TOC.? */
 #ifdef CONFIG_DYNAMIC_FTRACE
 	unsigned long toc;
@@ -78,9 +84,21 @@ struct mod_arch_specific {
 #    endif	/* MODULE */
 #endif
 
-bool is_module_trampoline(u32 *insns);
-int module_trampoline_target(struct module *mod, u32 *trampoline,
+int module_trampoline_target(struct module *mod, unsigned long trampoline,
 			     unsigned long *target);
+
+#ifdef CONFIG_DYNAMIC_FTRACE
+int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs);
+#else
+static inline int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs)
+{
+	return 0;
+}
+#endif
+
+unsigned long stub_for_addr(const struct elf_info *elf_info, unsigned long addr,
+			    const char *obj_name);
+int restore_r2(u32 *instruction, const char *obj_name);
 
 struct exception_table_entry;
 void sort_ex_table(struct exception_table_entry *start,

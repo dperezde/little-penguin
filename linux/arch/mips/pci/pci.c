@@ -83,38 +83,47 @@ static void pcibios_scanbus(struct pci_controller *hose)
 	LIST_HEAD(resources);
 	struct pci_bus *bus;
 
-	if (!hose->iommu)
-		PCI_DMA_BUS_IS_PHYS = 1;
-
 	if (hose->get_busno && pci_has_flag(PCI_PROBE_ONLY))
 		next_busno = (*hose->get_busno)();
 
 	pci_add_resource_offset(&resources,
 				hose->mem_resource, hose->mem_offset);
-	pci_add_resource_offset(&resources, hose->io_resource, hose->io_offset);
+	pci_add_resource_offset(&resources,
+				hose->io_resource, hose->io_offset);
+	pci_add_resource_offset(&resources,
+				hose->busn_resource, hose->busn_offset);
 	bus = pci_scan_root_bus(NULL, next_busno, hose->pci_ops, hose,
 				&resources);
-	if (!bus)
-		pci_free_resource_list(&resources);
-
 	hose->bus = bus;
 
 	need_domain_info = need_domain_info || hose->index;
 	hose->need_domain_info = need_domain_info;
-	if (bus) {
-		next_busno = bus->busn_res.end + 1;
-		/* Don't allow 8-bit bus number overflow inside the hose -
-		   reserve some space for bridges. */
-		if (next_busno > 224) {
-			next_busno = 0;
-			need_domain_info = 1;
-		}
 
-		if (!pci_has_flag(PCI_PROBE_ONLY)) {
-			pci_bus_size_bridges(bus);
-			pci_bus_assign_resources(bus);
-		}
+	if (!bus) {
+		pci_free_resource_list(&resources);
+		return;
 	}
+
+	next_busno = bus->busn_res.end + 1;
+	/* Don't allow 8-bit bus number overflow inside the hose -
+	   reserve some space for bridges. */
+	if (next_busno > 224) {
+		next_busno = 0;
+		need_domain_info = 1;
+	}
+
+	/*
+	 * We insert PCI resources into the iomem_resource and
+	 * ioport_resource trees in either pci_bus_claim_resources()
+	 * or pci_bus_assign_resources().
+	 */
+	if (pci_has_flag(PCI_PROBE_ONLY)) {
+		pci_bus_claim_resources(bus);
+	} else {
+		pci_bus_size_bridges(bus);
+		pci_bus_assign_resources(bus);
+	}
+	pci_bus_add_devices(bus);
 }
 
 #ifdef CONFIG_OF
@@ -316,6 +325,16 @@ void pcibios_fixup_bus(struct pci_bus *bus)
 
 EXPORT_SYMBOL(PCIBIOS_MIN_IO);
 EXPORT_SYMBOL(PCIBIOS_MIN_MEM);
+
+void pci_resource_to_user(const struct pci_dev *dev, int bar,
+			  const struct resource *rsrc, resource_size_t *start,
+			  resource_size_t *end)
+{
+	phys_addr_t size = resource_size(rsrc);
+
+	*start = fixup_bigphys_addr(rsrc->start, size);
+	*end = rsrc->start + size;
+}
 
 int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
 			enum pci_mmap_state mmap_state, int write_combine)

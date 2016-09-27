@@ -17,6 +17,9 @@
 
 #ifdef CONFIG_KEYS
 
+struct kernel_pkey_query;
+struct kernel_pkey_params;
+
 /*
  * key under-construction record
  * - passed to the request_key actor if supplied
@@ -40,17 +43,33 @@ struct key_construction {
  */
 struct key_preparsed_payload {
 	char		*description;	/* Proposed key description (or NULL) */
-	void		*type_data[2];	/* Private key-type data */
-	void		*payload[2];	/* Proposed payload */
+	union key_payload payload;	/* Proposed payload */
 	const void	*data;		/* Raw data */
 	size_t		datalen;	/* Raw datalen */
 	size_t		quotalen;	/* Quota length for proposed payload */
 	time_t		expiry;		/* Expiry time of key */
-	bool		trusted;	/* True if key is trusted */
 };
 
 typedef int (*request_key_actor_t)(struct key_construction *key,
 				   const char *op, void *aux);
+
+/*
+ * Preparsed matching criterion.
+ */
+struct key_match_data {
+	/* Comparison function, defaults to exact description match, but can be
+	 * overridden by type->match_preparse().  Should return true if a match
+	 * is found and false if not.
+	 */
+	bool (*cmp)(const struct key *key,
+		    const struct key_match_data *match_data);
+
+	const void	*raw_data;	/* Raw match data */
+	void		*preparsed;	/* For ->match_preparse() to stash stuff */
+	unsigned	lookup_type;	/* Type of lookup for this search. */
+#define KEYRING_SEARCH_LOOKUP_DIRECT	0x0000	/* Direct lookup by description. */
+#define KEYRING_SEARCH_LOOKUP_ITERATE	0x0001	/* Iterative search. */
+};
 
 /*
  * kernel managed key type definition
@@ -64,11 +83,6 @@ struct key_type {
 	 *   function only needs to be called if the real datalen is different
 	 */
 	size_t def_datalen;
-
-	/* Default key search algorithm. */
-	unsigned def_lookup_type;
-#define KEYRING_SEARCH_LOOKUP_DIRECT	0x0000	/* Direct lookup by description. */
-#define KEYRING_SEARCH_LOOKUP_ITERATE	0x0001	/* Iterative search. */
 
 	/* vet a description */
 	int (*vet_description)(const char *description);
@@ -96,8 +110,15 @@ struct key_type {
 	 */
 	int (*update)(struct key *key, struct key_preparsed_payload *prep);
 
-	/* match a key against a description */
-	int (*match)(const struct key *key, const void *desc);
+	/* Preparse the data supplied to ->match() (optional).  The
+	 * data to be preparsed can be found in match_data->raw_data.
+	 * The lookup type can also be set by this function.
+	 */
+	int (*match_preparse)(struct key_match_data *match_data);
+
+	/* Free preparsed match data (optional).  This should be supplied it
+	 * ->match_preparse() is supplied. */
+	void (*match_free)(struct key_match_data *match_data);
 
 	/* clear some of the data from a key on revokation (optional)
 	 * - the key's semaphore will be write-locked by the caller
@@ -128,6 +149,14 @@ struct key_type {
 	 *   its course
 	 */
 	request_key_actor_t request_key;
+
+	/* Asymmetric key accessor functions. */
+	int (*asym_query)(const struct kernel_pkey_params *params,
+			  struct kernel_pkey_query *info);
+	int (*asym_eds_op)(struct kernel_pkey_params *params,
+			   const void *in, void *out);
+	int (*asym_verify_signature)(struct kernel_pkey_params *params,
+				     const void *in, const void *in2);
 
 	/* internal fields */
 	struct list_head	link;		/* link in types list */

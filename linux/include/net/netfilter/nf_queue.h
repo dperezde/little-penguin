@@ -12,12 +12,8 @@ struct nf_queue_entry {
 	unsigned int		id;
 
 	struct nf_hook_ops	*elem;
-	u_int8_t		pf;
+	struct nf_hook_state	state;
 	u16			size; /* sizeof(entry) + saved route keys */
-	unsigned int		hook;
-	struct net_device	*indev;
-	struct net_device	*outdev;
-	int			(*okfn)(struct sk_buff *);
 
 	/* extra space to store route keys */
 };
@@ -28,13 +24,15 @@ struct nf_queue_entry {
 struct nf_queue_handler {
 	int			(*outfn)(struct nf_queue_entry *entry,
 					 unsigned int queuenum);
+	void			(*nf_hook_drop)(struct net *net,
+						struct nf_hook_ops *ops);
 };
 
-void nf_register_queue_handler(const struct nf_queue_handler *qh);
-void nf_unregister_queue_handler(void);
+void nf_register_queue_handler(struct net *net, const struct nf_queue_handler *qh);
+void nf_unregister_queue_handler(struct net *net);
 void nf_reinject(struct nf_queue_entry *entry, unsigned int verdict);
 
-bool nf_queue_entry_get_refs(struct nf_queue_entry *entry);
+void nf_queue_entry_get_refs(struct nf_queue_entry *entry);
 void nf_queue_entry_release_refs(struct nf_queue_entry *entry);
 
 static inline void init_hashrandom(u32 *jhash_initval)
@@ -56,7 +54,6 @@ static inline u32 hash_v4(const struct sk_buff *skb, u32 jhash_initval)
 			(__force u32)iph->saddr, iph->protocol, jhash_initval);
 }
 
-#if IS_ENABLED(CONFIG_IP6_NF_IPTABLES)
 static inline u32 hash_v6(const struct sk_buff *skb, u32 jhash_initval)
 {
 	const struct ipv6hdr *ip6h = ipv6_hdr(skb);
@@ -79,7 +76,6 @@ static inline u32 hash_v6(const struct sk_buff *skb, u32 jhash_initval)
 
 	return jhash_3words(a, b, c, jhash_initval);
 }
-#endif
 
 static inline u32
 nfqueue_hash(const struct sk_buff *skb, u16 queue, u16 queues_total, u8 family,
@@ -87,10 +83,8 @@ nfqueue_hash(const struct sk_buff *skb, u16 queue, u16 queues_total, u8 family,
 {
 	if (family == NFPROTO_IPV4)
 		queue += ((u64) hash_v4(skb, jhash_initval) * queues_total) >> 32;
-#if IS_ENABLED(CONFIG_IP6_NF_IPTABLES)
 	else if (family == NFPROTO_IPV6)
 		queue += ((u64) hash_v6(skb, jhash_initval) * queues_total) >> 32;
-#endif
 
 	return queue;
 }

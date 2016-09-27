@@ -1,6 +1,6 @@
 /* Common methods for dibusb-based-receivers.
  *
- * Copyright (C) 2004-5 Patrick Boettcher (patrick.boettcher@desy.de)
+ * Copyright (C) 2004-5 Patrick Boettcher (patrick.boettcher@posteo.de)
  *
  *	This program is free software; you can redistribute it and/or modify it
  *	under the terms of the GNU General Public License as published by the Free
@@ -9,7 +9,6 @@
  * see Documentation/dvb/README.dvb-usb for more information
  */
 
-#include <linux/kconfig.h>
 #include "dibusb.h"
 
 /* Max transfer size done by I2C transfer functions */
@@ -184,6 +183,8 @@ int dibusb_read_eeprom_byte(struct dvb_usb_device *d, u8 offs, u8 *val)
 }
 EXPORT_SYMBOL(dibusb_read_eeprom_byte);
 
+#if IS_ENABLED(CONFIG_DVB_DIB3000MC)
+
 /* 3000MC/P stuff */
 // Config Adjacent channels  Perf -cal22
 static struct dibx000_agc_config dib3000p_mt2060_agc_config = {
@@ -242,8 +243,6 @@ static struct dibx000_agc_config dib3000p_panasonic_agc_config = {
 	.agc2_slope2 = 0x1e,
 };
 
-#if IS_ENABLED(CONFIG_DVB_DIB3000MC)
-
 static struct dib3000mc_config mod3000p_dib3000p_config = {
 	&dib3000p_panasonic_agc_config,
 
@@ -258,8 +257,8 @@ static struct dib3000mc_config mod3000p_dib3000p_config = {
 
 int dibusb_dib3000mc_frontend_attach(struct dvb_usb_adapter *adap)
 {
-	if (adap->dev->udev->descriptor.idVendor  == USB_VID_LITEON &&
-			adap->dev->udev->descriptor.idProduct ==
+	if (le16_to_cpu(adap->dev->udev->descriptor.idVendor) == USB_VID_LITEON &&
+	    le16_to_cpu(adap->dev->udev->descriptor.idProduct) ==
 			USB_PID_LITEON_DVB_T_WARM) {
 		msleep(1000);
 	}
@@ -297,8 +296,8 @@ int dibusb_dib3000mc_tuner_attach(struct dvb_usb_adapter *adap)
 	struct i2c_adapter *tun_i2c;
 
 	// First IF calibration for Liteon Sticks
-	if (adap->dev->udev->descriptor.idVendor  == USB_VID_LITEON &&
-		adap->dev->udev->descriptor.idProduct == USB_PID_LITEON_DVB_T_WARM) {
+	if (le16_to_cpu(adap->dev->udev->descriptor.idVendor) == USB_VID_LITEON &&
+	    le16_to_cpu(adap->dev->udev->descriptor.idProduct) == USB_PID_LITEON_DVB_T_WARM) {
 
 		dibusb_read_eeprom_byte(adap->dev,0x7E,&a);
 		dibusb_read_eeprom_byte(adap->dev,0x7F,&b);
@@ -310,8 +309,8 @@ int dibusb_dib3000mc_tuner_attach(struct dvb_usb_adapter *adap)
 		else
 			warn("LITE-ON DVB-T: Strange IF1 calibration :%2X %2X\n", a, b);
 
-	} else if (adap->dev->udev->descriptor.idVendor  == USB_VID_DIBCOM &&
-		   adap->dev->udev->descriptor.idProduct == USB_PID_DIBCOM_MOD3001_WARM) {
+	} else if (le16_to_cpu(adap->dev->udev->descriptor.idVendor) == USB_VID_DIBCOM &&
+		   le16_to_cpu(adap->dev->udev->descriptor.idProduct) == USB_PID_DIBCOM_MOD3001_WARM) {
 		u8 desc;
 		dibusb_read_eeprom_byte(adap->dev, 7, &desc);
 		if (desc == 2) {

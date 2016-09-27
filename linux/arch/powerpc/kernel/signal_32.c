@@ -44,6 +44,7 @@
 #include <asm/vdso.h>
 #include <asm/switch_to.h>
 #include <asm/tm.h>
+#include <asm/asm-prototypes.h>
 #ifdef CONFIG_PPC64
 #include "ppc32.h"
 #include <asm/unistd.h>
@@ -458,7 +459,7 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
 	 * contains valid data
 	 */
 	if (current->thread.used_vsr && ctx_has_vsx_region) {
-		__giveup_vsx(current);
+		flush_vsx_to_thread(current);
 		if (copy_vsx_to_user(&frame->mc_vsregs, current))
 			return 1;
 		msr |= MSR_VSX;
@@ -606,7 +607,7 @@ static int save_tm_user_regs(struct pt_regs *regs,
 	 * contains valid data
 	 */
 	if (current->thread.used_vsr) {
-		__giveup_vsx(current);
+		flush_vsx_to_thread(current);
 		if (copy_vsx_to_user(&frame->mc_vsregs, current))
 			return 1;
 		if (msr & MSR_VSX) {
@@ -687,15 +688,6 @@ static long restore_user_regs(struct pt_regs *regs,
 	if (sig)
 		regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
 
-	/*
-	 * Do this before updating the thread state in
-	 * current->thread.fpr/vr/evr.  That way, if we get preempted
-	 * and another task grabs the FPU/Altivec/SPE, it won't be
-	 * tempted to save the current CPU state into the thread_struct
-	 * and corrupt what we are writing there.
-	 */
-	discard_lazy_cpu_state();
-
 #ifdef CONFIG_ALTIVEC
 	/*
 	 * Force the process to reload the altivec registers from
@@ -707,6 +699,7 @@ static long restore_user_regs(struct pt_regs *regs,
 		if (__copy_from_user(&current->thread.vr_state, &sr->mc_vregs,
 				     sizeof(sr->mc_vregs)))
 			return 1;
+		current->thread.used_vr = true;
 	} else if (current->thread.used_vr)
 		memset(&current->thread.vr_state, 0,
 		       ELF_NVRREG * sizeof(vector128));
@@ -733,6 +726,7 @@ static long restore_user_regs(struct pt_regs *regs,
 		 */
 		if (copy_vsx_from_user(current, &sr->mc_vsregs))
 			return 1;
+		current->thread.used_vsr = true;
 	} else if (current->thread.used_vsr)
 		for (i = 0; i < 32 ; i++)
 			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
@@ -752,6 +746,7 @@ static long restore_user_regs(struct pt_regs *regs,
 		if (__copy_from_user(current->thread.evr, &sr->mc_vregs,
 				     ELF_NEVRREG * sizeof(u32)))
 			return 1;
+		current->thread.used_spe = true;
 	} else if (current->thread.used_spe)
 		memset(current->thread.evr, 0, ELF_NEVRREG * sizeof(u32));
 
@@ -798,15 +793,6 @@ static long restore_tm_user_regs(struct pt_regs *regs,
 	/* Restore the previous little-endian mode */
 	regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
 
-	/*
-	 * Do this before updating the thread state in
-	 * current->thread.fpr/vr/evr.  That way, if we get preempted
-	 * and another task grabs the FPU/Altivec/SPE, it won't be
-	 * tempted to save the current CPU state into the thread_struct
-	 * and corrupt what we are writing there.
-	 */
-	discard_lazy_cpu_state();
-
 #ifdef CONFIG_ALTIVEC
 	regs->msr &= ~MSR_VEC;
 	if (msr & MSR_VEC) {
@@ -817,6 +803,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
 				     &tm_sr->mc_vregs,
 				     sizeof(sr->mc_vregs)))
 			return 1;
+		current->thread.used_vr = true;
 	} else if (current->thread.used_vr) {
 		memset(&current->thread.vr_state, 0,
 		       ELF_NVRREG * sizeof(vector128));
@@ -850,6 +837,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
 		if (copy_vsx_from_user(current, &sr->mc_vsregs) ||
 		    copy_transact_vsx_from_user(current, &tm_sr->mc_vsregs))
 			return 1;
+		current->thread.used_vsr = true;
 	} else if (current->thread.used_vsr)
 		for (i = 0; i < 32 ; i++) {
 			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
@@ -866,6 +854,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
 		if (__copy_from_user(current->thread.evr, &sr->mc_vregs,
 				     ELF_NEVRREG * sizeof(u32)))
 			return 1;
+		current->thread.used_spe = true;
 	} else if (current->thread.used_spe)
 		memset(current->thread.evr, 0, ELF_NEVRREG * sizeof(u32));
 
@@ -875,6 +864,15 @@ static long restore_tm_user_regs(struct pt_regs *regs,
 		return 1;
 #endif /* CONFIG_SPE */
 
+	/* Get the top half of the MSR from the user context */
+	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
+		return 1;
+	msr_hi <<= 32;
+	/* If TM bits are set to the reserved value, it's an invalid context */
+	if (MSR_TM_RESV(msr_hi))
+		return 1;
+	/* Pull in the MSR TM bits from the user context */
+	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr_hi & MSR_TS_MASK);
 	/* Now, recheckpoint.  This loads up all of the checkpointed (older)
 	 * registers, including FP and V[S]Rs.  After recheckpointing, the
 	 * transactional versions should be loaded.
@@ -884,11 +882,6 @@ static long restore_tm_user_regs(struct pt_regs *regs,
 	current->thread.tm_texasr |= TEXASR_FS;
 	/* This loads the checkpointed FP/VEC state, if used */
 	tm_recheckpoint(&current->thread, msr);
-	/* Get the top half of the MSR */
-	if (__get_user(msr_hi, &tm_sr->mc_gregs[PT_MSR]))
-		return 1;
-	/* Pull in MSR TM from user context */
-	regs->msr = (regs->msr & ~MSR_TS_MASK) | ((msr_hi<<32) & MSR_TS_MASK);
 
 	/* This loads the speculative FP/VEC state, if used */
 	if (msr & MSR_FP) {
@@ -949,6 +942,11 @@ int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
 		err |= __put_user(s->si_overrun, &d->si_overrun);
 		err |= __put_user(s->si_int, &d->si_int);
 		break;
+	case __SI_SYS >> 16:
+		err |= __put_user(ptr_to_compat(s->si_call_addr), &d->si_call_addr);
+		err |= __put_user(s->si_syscall, &d->si_syscall);
+		err |= __put_user(s->si_arch, &d->si_arch);
+		break;
 	case __SI_RT >> 16: /* This is not generated by the kernel as of now.  */
 	case __SI_MESGQ >> 16:
 		err |= __put_user(s->si_int, &d->si_int);
@@ -966,8 +964,6 @@ int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
 
 int copy_siginfo_from_user32(siginfo_t *to, struct compat_siginfo __user *from)
 {
-	memset(to, 0, sizeof *to);
-
 	if (copy_from_user(to, from, 3*sizeof(int)) ||
 	    copy_from_user(to->_sifields._pad,
 			   from->_sifields._pad, SI_PAD_SIZE32))
@@ -1231,13 +1227,27 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
 	int tm_restore = 0;
 #endif
 	/* Always make any pending restarted system calls return -EINTR */
-	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+	current->restart_block.fn = do_no_restart_syscall;
 
 	rt_sf = (struct rt_sigframe __user *)
 		(regs->gpr[1] + __SIGNAL_FRAMESIZE + 16);
 	if (!access_ok(VERIFY_READ, rt_sf, sizeof(*rt_sf)))
 		goto bad;
+
 #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+	/*
+	 * If there is a transactional state then throw it away.
+	 * The purpose of a sigreturn is to destroy all traces of the
+	 * signal frame, this includes any transactional state created
+	 * within in. We only check for suspended as we can never be
+	 * active in the kernel, we are active, there is nothing better to
+	 * do than go ahead and Bad Thing later.
+	 * The cause is not important as there will never be a
+	 * recheckpoint so it's not user visible.
+	 */
+	if (MSR_TM_SUSPENDED(mfmsr()))
+		tm_reclaim_current(0);
+
 	if (__get_user(tmp, &rt_sf->uc.uc_link))
 		goto bad;
 	uc_transact = (struct ucontext __user *)(uintptr_t)tmp;
@@ -1504,7 +1514,7 @@ long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
 #endif
 
 	/* Always make any pending restarted system calls return -EINTR */
-	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+	current->restart_block.fn = do_no_restart_syscall;
 
 	sf = (struct sigframe __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
 	sc = &sf->sctx;

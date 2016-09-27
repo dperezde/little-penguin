@@ -1,15 +1,17 @@
-PROGS := tm-resched-dscr
+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
+	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
 
-all: $(PROGS)
+all: $(TEST_PROGS)
 
-$(PROGS): ../harness.c
+$(TEST_PROGS): ../harness.c ../utils.c
 
-run_tests: all
-	@-for PROG in $(PROGS); do \
-		./$$PROG; \
-	done;
+CFLAGS += -mhtm
+
+tm-syscall: tm-syscall-asm.S
+tm-syscall: CFLAGS += -I../../../../../usr/include
+tm-tmspr: CFLAGS += -pthread
+
+include ../../lib.mk
 
 clean:
-	rm -f $(PROGS) *.o
-
-.PHONY: all run_tests clean
+	rm -f $(TEST_PROGS) *.o

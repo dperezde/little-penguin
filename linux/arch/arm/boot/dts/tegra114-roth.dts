@@ -15,6 +15,10 @@
 		linux,initrd-end = <0x82800000>;
 	};
 
+	aliases {
+		serial0 = &uartd;
+	};
+
 	firmware {
 		trusted-foundations {
 			compatible = "tlm,trusted-foundations";
@@ -798,7 +802,7 @@
 		palmas: pmic@58 {
 			compatible = "ti,palmas";
 			reg = <0x58>;
-			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_LOW>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
 
 			#interrupt-cells = <2>;
 			interrupt-controller;
@@ -916,8 +920,6 @@
 						regulator-name = "vddio-sdmmc3";
 						regulator-min-microvolt = <1800000>;
 						regulator-max-microvolt = <3300000>;
-						regulator-always-on;
-						regulator-boot-on;
 					};
 
 					ldousb {
@@ -962,7 +964,7 @@
 	sdhci@78000400 {
 		status = "okay";
 		bus-width = <4>;
-		vmmc-supply = <&vddio_sdmmc3>;
+		vqmmc-supply = <&vddio_sdmmc3>;
 		cd-gpios = <&gpio TEGRA_GPIO(V, 2) GPIO_ACTIVE_LOW>;
 		power-gpios = <&gpio TEGRA_GPIO(H, 0) GPIO_ACTIVE_HIGH>;
 	};
@@ -971,7 +973,6 @@
 	sdhci@78000600 {
 		status = "okay";
 		bus-width = <8>;
-		vmmc-supply = <&vdd_1v8>;
 		non-removable;
 	};
 
@@ -1019,9 +1020,9 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		clk32k_in: clock {
+		clk32k_in: clock@0 {
 			compatible = "fixed-clock";
-			reg=<0>;
+			reg = <0>;
 			#clock-cells = <0>;
 			clock-frequency = <32768>;
 		};
@@ -1046,7 +1047,7 @@
 			label = "Power";
 			gpios = <&gpio TEGRA_GPIO(Q, 0) GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_POWER>;
-			gpio-key,wakeup;
+			wakeup-source;
 		};
 	};
 

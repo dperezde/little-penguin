@@ -10,8 +10,19 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   int node,
 					   const char namefmt[], ...);
 
+/**
+ * kthread_create - create a kthread on the current node
+ * @threadfn: the function to run in the thread
+ * @data: data pointer for @threadfn()
+ * @namefmt: printf-style format string for the thread name
+ * @...: arguments for @namefmt.
+ *
+ * This macro will create a kthread on the current node, leaving it in
+ * the stopped state.  This is just a helper for kthread_create_on_node();
+ * see the documentation there for more details.
+ */
 #define kthread_create(threadfn, data, namefmt, arg...) \
-	kthread_create_on_node(threadfn, data, -1, namefmt, ##arg)
+	kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
 
 
 struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
@@ -38,6 +49,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 })
 
 void kthread_bind(struct task_struct *k, unsigned int cpu);
+void kthread_bind_mask(struct task_struct *k, const struct cpumask *mask);
 int kthread_stop(struct task_struct *k);
 bool kthread_should_stop(void);
 bool kthread_should_park(void);
