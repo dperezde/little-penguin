@@ -7,7 +7,7 @@
  * defined; unless noted otherwise, they are optional, and can be
  * filled in with a null pointer.
  *
- * struct tty_struct * (*lookup)(struct tty_driver *self, int idx)
+ * struct tty_struct * (*lookup)(struct tty_driver *self, struct file *, int idx)
  *
  *	Return the tty device corresponding to idx, NULL if there is not
  *	one currently in use and an ERR_PTR value on error. Called under
@@ -152,6 +152,8 @@
  * 	This routine notifies the tty driver that it should stop
  * 	outputting characters to the tty device.  
  *
+ *	Called with ->flow_lock held. Serialized with start() method.
+ *
  *	Optional:
  *
  *	Note: Call stop_tty not this method.
@@ -160,6 +162,8 @@
  *
  * 	This routine notifies the tty driver that it resume sending
  *	characters to the tty device.
+ *
+ *	Called with ->flow_lock held. Serialized with stop() method.
  *
  *	Optional:
  *
@@ -246,7 +250,7 @@ struct serial_icounter_struct;
 
 struct tty_operations {
 	struct tty_struct * (*lookup)(struct tty_driver *driver,
-			struct inode *inode, int idx);
+			struct file *filp, int idx);
 	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
 	void (*remove)(struct tty_driver *driver, struct tty_struct *tty);
 	int  (*open)(struct tty_struct * tty, struct file * filp);
@@ -292,7 +296,7 @@ struct tty_operations {
 struct tty_driver {
 	int	magic;		/* magic number for this structure */
 	struct kref kref;	/* Reference management */
-	struct cdev *cdevs;
+	struct cdev **cdevs;
 	struct module	*owner;
 	const char	*driver_name;
 	const char	*name;

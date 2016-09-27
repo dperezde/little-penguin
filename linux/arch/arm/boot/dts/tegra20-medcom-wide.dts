@@ -6,6 +6,14 @@
 	model = "Avionic Design Medcom-Wide board";
 	compatible = "ad,medcom-wide", "ad,tamonten", "nvidia,tegra20";
 
+	aliases {
+		serial0 = &uartd;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
 	pwm@7000a000 {
 		status = "okay";
 	};

@@ -15,7 +15,6 @@
 #include <linux/delay.h>
 #include <linux/string.h>
 #include <linux/init.h>
-#include <linux/bootmem.h>
 #include <linux/irq.h>
 
 #include <asm/sections.h>
@@ -511,6 +510,7 @@ static int __init maple_add_bridge(struct device_node *dev)
 		return -ENOMEM;
 	hose->first_busno = bus_range ? bus_range[0] : 0;
 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+	hose->controller_ops = maple_pci_controller_ops;
 
 	disp_name = NULL;
 	if (of_device_is_compatible(dev, "u3-agp")) {
@@ -568,6 +568,26 @@ void maple_pci_irq_fixup(struct pci_dev *dev)
 	DBG(" <- maple_pci_irq_fixup\n");
 }
 
+static int maple_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
+{
+	struct pci_controller *hose = pci_bus_to_host(bridge->bus);
+	struct device_node *np, *child;
+
+	if (hose != u3_agp)
+		return 0;
+
+	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
+	 * assume there is no P2P bridge on the AGP bus, which should be a
+	 * safe assumptions hopefully.
+	 */
+	np = hose->dn;
+	PCI_DN(np)->busno = 0xf0;
+	for_each_child_of_node(np, child)
+		PCI_DN(child)->busno = 0xf0;
+
+	return 0;
+}
+
 void __init maple_pci_init(void)
 {
 	struct device_node *np, *root;
@@ -605,19 +625,7 @@ void __init maple_pci_init(void)
 	if (ht && maple_add_bridge(ht) != 0)
 		of_node_put(ht);
 
-	/* Setup the linkage between OF nodes and PHBs */ 
-	pci_devs_phb_init();
-
-	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
-	 * assume there is no P2P bridge on the AGP bus, which should be a
-	 * safe assumptions hopefully.
-	 */
-	if (u3_agp) {
-		struct device_node *np = u3_agp->dn;
-		PCI_DN(np)->busno = 0xf0;
-		for (np = np->child; np; np = np->sibling)
-			PCI_DN(np)->busno = 0xf0;
-	}
+	ppc_md.pcibios_root_bridge_prepare = maple_pci_root_bridge_prepare;
 
 	/* Tell pci.c to not change any resource allocations.  */
 	pci_add_flags(PCI_PROBE_ONLY);
@@ -661,3 +669,6 @@ static void quirk_ipr_msi(struct pci_dev *dev)
 }
 DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_OBSIDIAN,
 			quirk_ipr_msi);
+
+struct pci_controller_ops maple_pci_controller_ops = {
+};

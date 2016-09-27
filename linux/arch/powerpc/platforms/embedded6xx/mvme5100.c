@@ -42,7 +42,7 @@
 static phys_addr_t pci_membase;
 static u_char *restart;
 
-static void mvme5100_8259_cascade(unsigned int irq, struct irq_desc *desc)
+static void mvme5100_8259_cascade(struct irq_desc *desc)
 {
 	struct irq_chip *chip = irq_desc_get_chip(desc);
 	unsigned int cascade_irq = i8259_irq();
@@ -149,7 +149,7 @@ static int __init mvme5100_add_bridge(struct device_node *dev)
 	return 0;
 }
 
-static struct of_device_id mvme5100_of_bus_ids[] __initdata = {
+static const struct of_device_id mvme5100_of_bus_ids[] __initconst = {
 	{ .compatible = "hawk-bridge", },
 	{},
 };
@@ -177,7 +177,7 @@ static void mvme5100_show_cpuinfo(struct seq_file *m)
 	seq_puts(m, "Machine\t\t: MVME5100\n");
 }
 
-static void mvme5100_restart(char *cmd)
+static void __noreturn mvme5100_restart(char *cmd)
 {
 
 	local_irq_disable();
@@ -194,9 +194,7 @@ static void mvme5100_restart(char *cmd)
  */
 static int __init mvme5100_probe(void)
 {
-	unsigned long root = of_get_flat_dt_root();
-
-	return of_flat_dt_is_compatible(root, "MVME5100");
+	return of_machine_is_compatible("MVME5100");
 }
 
 static int __init probe_of_platform_devices(void)

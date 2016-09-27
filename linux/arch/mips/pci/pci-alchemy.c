@@ -76,7 +76,7 @@ static void mod_wired_entry(int entry, unsigned long entrylo0,
 	unsigned long old_ctx;
 
 	/* Save old context and create impossible VPN2 value */
-	old_ctx = read_c0_entryhi() & 0xff;
+	old_ctx = read_c0_entryhi() & MIPS_ENTRYHI_ASID;
 	old_pagemask = read_c0_pagemask();
 	write_c0_index(entry);
 	write_c0_pagemask(pagemask);
@@ -505,7 +505,6 @@ static struct platform_driver alchemy_pcictl_driver = {
 	.probe		= alchemy_pci_probe,
 	.driver = {
 		.name	= "alchemy-pci",
-		.owner	= THIS_MODULE,
 	},
 };
 

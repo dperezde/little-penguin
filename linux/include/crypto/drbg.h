@@ -43,14 +43,16 @@
 #include <linux/random.h>
 #include <linux/scatterlist.h>
 #include <crypto/hash.h>
+#include <crypto/skcipher.h>
 #include <linux/module.h>
 #include <linux/crypto.h>
 #include <linux/slab.h>
 #include <crypto/internal/rng.h>
 #include <crypto/rng.h>
 #include <linux/fips.h>
-#include <linux/spinlock.h>
+#include <linux/mutex.h>
 #include <linux/list.h>
+#include <linux/workqueue.h>
 
 /*
  * Concatenation Helper and string operation helper
@@ -82,15 +84,6 @@ typedef uint32_t drbg_flag_t;
 struct drbg_core {
 	drbg_flag_t flags;	/* flags for the cipher */
 	__u8 statelen;		/* maximum state length */
-	/*
-	 * maximum length of personalization string or additional input
-	 * string -- exponent for base 2
-	 */
-	__u8 max_addtllen;
-	/* maximum bits per RNG request -- exponent for base 2*/
-	__u8 max_bits;
-	/* maximum number of requests -- exponent for base 2 */
-	__u8 max_req;
 	__u8 blocklen_bytes;	/* block size of output in bytes */
 	char cra_name[CRYPTO_MAX_ALG_NAME]; /* mapping to kernel crypto API */
 	 /* kernel crypto API backend cipher name */
@@ -113,24 +106,35 @@ struct drbg_test_data {
 };
 
 struct drbg_state {
-	spinlock_t drbg_lock;	/* lock around DRBG */
+	struct mutex drbg_mutex;	/* lock around DRBG */
 	unsigned char *V;	/* internal state 10.1.1.1 1a) */
+	unsigned char *Vbuf;
 	/* hash: static value 10.1.1.1 1b) hmac / ctr: key */
 	unsigned char *C;
+	unsigned char *Cbuf;
 	/* Number of RNG requests since last reseed -- 10.1.1.1 1c) */
 	size_t reseed_ctr;
+	size_t reseed_threshold;
 	 /* some memory the DRBG can use for its operation */
 	unsigned char *scratchpad;
+	unsigned char *scratchpadbuf;
 	void *priv_data;	/* Cipher handle */
+
+	struct crypto_skcipher *ctr_handle;	/* CTR mode cipher handle */
+	struct skcipher_request *ctr_req;	/* CTR mode request handle */
+	__u8 *ctr_null_value_buf;		/* CTR mode unaligned buffer */
+	__u8 *ctr_null_value;			/* CTR mode aligned zero buf */
+	struct completion ctr_completion;	/* CTR mode async handler */
+	int ctr_async_err;			/* CTR mode async error */
+
 	bool seeded;		/* DRBG fully seeded? */
 	bool pr;		/* Prediction resistance enabled? */
-#ifdef CONFIG_CRYPTO_FIPS
-	bool fips_primed;	/* Continuous test primed? */
-	unsigned char *prev;	/* FIPS 140-2 continuous test value */
-#endif
+	struct work_struct seed_work;	/* asynchronous seeding support */
+	struct crypto_rng *jent;
 	const struct drbg_state_ops *d_ops;
 	const struct drbg_core *core;
-	struct drbg_test_data *test_data;
+	struct drbg_string test_data;
+	struct random_ready_callback random_ready;
 };
 
 static inline __u8 drbg_statelen(struct drbg_state *drbg)
@@ -156,12 +160,13 @@ static inline __u8 drbg_keylen(struct drbg_state *drbg)
 
 static inline size_t drbg_max_request_bytes(struct drbg_state *drbg)
 {
-	/* max_bits is in bits, but buflen is in bytes */
-	return (1 << (drbg->core->max_bits - 3));
+	/* SP800-90A requires the limit 2**19 bits, but we return bytes */
+	return (1 << 16);
 }
 
 static inline size_t drbg_max_addtl(struct drbg_state *drbg)
 {
+	/* SP800-90A requires 2**35 bytes additional info str / pers str */
 #if (__BITS_PER_LONG == 32)
 	/*
 	 * SP800-90A allows smaller maximum numbers to be returned -- we
@@ -170,33 +175,23 @@ static inline size_t drbg_max_addtl(struct drbg_state *drbg)
 	 */
 	return (SIZE_MAX - 1);
 #else
-	return (1UL<<(drbg->core->max_addtllen));
+	return (1UL<<35);
 #endif
 }
 
 static inline size_t drbg_max_requests(struct drbg_state *drbg)
 {
+	/* SP800-90A requires 2**48 maximum requests before reseeding */
 #if (__BITS_PER_LONG == 32)
 	return SIZE_MAX;
 #else
-	return (1UL<<(drbg->core->max_req));
+	return (1UL<<48);
 #endif
 }
 
 /*
- * kernel crypto API input data structure for DRBG generate in case dlen
- * is set to 0
- */
-struct drbg_gen {
-	unsigned char *outbuf;	/* output buffer for random numbers */
-	unsigned int outlen;	/* size of output buffer */
-	struct drbg_string *addtl;	/* additional information string */
-	struct drbg_test_data *test_data;	/* test data */
-};
-
-/*
  * This is a wrapper to the kernel crypto API function of
- * crypto_rng_get_bytes() to allow the caller to provide additional data.
+ * crypto_rng_generate() to allow the caller to provide additional data.
  *
  * @drng DRBG handle -- see crypto_rng_get_bytes
  * @outbuf output buffer -- see crypto_rng_get_bytes
@@ -211,21 +206,15 @@ static inline int crypto_drbg_get_bytes_addtl(struct crypto_rng *drng,
 			unsigned char *outbuf, unsigned int outlen,
 			struct drbg_string *addtl)
 {
-	int ret;
-	struct drbg_gen genbuf;
-	genbuf.outbuf = outbuf;
-	genbuf.outlen = outlen;
-	genbuf.addtl = addtl;
-	genbuf.test_data = NULL;
-	ret = crypto_rng_get_bytes(drng, (u8 *)&genbuf, 0);
-	return ret;
+	return crypto_rng_generate(drng, addtl->buf, addtl->len,
+				   outbuf, outlen);
 }
 
 /*
  * TEST code
  *
  * This is a wrapper to the kernel crypto API function of
- * crypto_rng_get_bytes() to allow the caller to provide additional data and
+ * crypto_rng_generate() to allow the caller to provide additional data and
  * allow furnishing of test_data
  *
  * @drng DRBG handle -- see crypto_rng_get_bytes
@@ -243,14 +232,10 @@ static inline int crypto_drbg_get_bytes_addtl_test(struct crypto_rng *drng,
 			struct drbg_string *addtl,
 			struct drbg_test_data *test_data)
 {
-	int ret;
-	struct drbg_gen genbuf;
-	genbuf.outbuf = outbuf;
-	genbuf.outlen = outlen;
-	genbuf.addtl = addtl;
-	genbuf.test_data = test_data;
-	ret = crypto_rng_get_bytes(drng, (u8 *)&genbuf, 0);
-	return ret;
+	crypto_rng_set_entropy(drng, test_data->testentropy->buf,
+			       test_data->testentropy->len);
+	return crypto_rng_generate(drng, addtl->buf, addtl->len,
+				   outbuf, outlen);
 }
 
 /*
@@ -271,14 +256,9 @@ static inline int crypto_drbg_reset_test(struct crypto_rng *drng,
 					 struct drbg_string *pers,
 					 struct drbg_test_data *test_data)
 {
-	int ret;
-	struct drbg_gen genbuf;
-	genbuf.outbuf = NULL;
-	genbuf.outlen = 0;
-	genbuf.addtl = pers;
-	genbuf.test_data = test_data;
-	ret = crypto_rng_reset(drng, (u8 *)&genbuf, 0);
-	return ret;
+	crypto_rng_set_entropy(drng, test_data->testentropy->buf,
+			       test_data->testentropy->len);
+	return crypto_rng_reset(drng, pers->buf, pers->len);
 }
 
 /* DRBG type flags */

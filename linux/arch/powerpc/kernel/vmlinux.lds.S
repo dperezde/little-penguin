@@ -52,9 +52,13 @@ SECTIONS
 		/* careful! __ftr_alt_* sections need to be close to .text */
 		*(.text .fixup __ftr_alt_* .ref.text)
 		SCHED_TEXT
+		CPUIDLE_TEXT
 		LOCK_TEXT
 		KPROBES_TEXT
 		IRQENTRY_TEXT
+		SOFTIRQENTRY_TEXT
+		MEM_KEEP(init.text)
+		MEM_KEEP(exit.text)
 
 #ifdef CONFIG_PPC32
 		*(.got1)
@@ -164,7 +168,7 @@ SECTIONS
 	. = ALIGN(8);
 	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET)
 	{
-#ifdef CONFIG_RELOCATABLE_PPC32
+#ifdef CONFIG_PPC32
 		__dynamic_symtab = .;
 #endif
 		*(.dynsym)
@@ -183,6 +187,12 @@ SECTIONS
 		*(.rela*)
 	}
 #endif
+	/* .exit.data is discarded at runtime, not link time,
+	 * to deal with references from .exit.text
+	 */
+	.exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) {
+		EXIT_DATA
+	}
 
 	/* freed after init ends here */
 	. = ALIGN(PAGE_SIZE);
@@ -213,6 +223,7 @@ SECTIONS
 		*(.opd)
 	}
 
+	. = ALIGN(256);
 	.got : AT(ADDR(.got) - LOAD_OFFSET) {
 		__toc_start = .;
 #ifndef CONFIG_RELOCATABLE

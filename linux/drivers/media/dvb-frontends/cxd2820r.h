@@ -22,7 +22,6 @@
 #ifndef CXD2820R_H
 #define CXD2820R_H
 
-#include <linux/kconfig.h>
 #include <linux/dvb/frontend.h>
 
 #define CXD2820R_GPIO_D (0 << 0) /* disable */
@@ -72,7 +71,7 @@ struct cxd2820r_config {
 };
 
 
-#if IS_ENABLED(CONFIG_DVB_CXD2820R)
+#if IS_REACHABLE(CONFIG_DVB_CXD2820R)
 extern struct dvb_frontend *cxd2820r_attach(
 	const struct cxd2820r_config *config,
 	struct i2c_adapter *i2c,

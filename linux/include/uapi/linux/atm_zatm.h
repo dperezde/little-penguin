@@ -14,6 +14,7 @@
 
 #include <linux/atmapi.h>
 #include <linux/atmioc.h>
+#include <linux/time.h>
 
 #define ZATM_GETPOOL	_IOW('a',ATMIOC_SARPRV+1,struct atmif_sioc)
 						/* get pool statistics */
@@ -34,12 +35,6 @@ struct zatm_pool_req {
 	int pool_num;			/* pool number */
 	struct zatm_pool_info info;	/* actual information */
 };
-
-struct zatm_t_hist {
-	struct timeval real;		/* real (wall-clock) time */
-	struct timeval expected;	/* expected real time */
-};
-
 
 #define ZATM_OAM_POOL		0	/* free buffer pool for OAM cells */
 #define ZATM_AAL0_POOL		1	/* free buffer pool for AAL0 cells */

@@ -39,8 +39,6 @@
 
 #include "mlx4.h"
 
-static const u8 zero_gid[16];	/* automatically initialized to 0 */
-
 int mlx4_get_mgm_entry_size(struct mlx4_dev *dev)
 {
 	return 1 << dev->oper_log_mgm_entry_size;
@@ -620,8 +618,8 @@ static int remove_promisc_qp(struct mlx4_dev *dev, u8 port,
 				err = mlx4_READ_ENTRY(dev,
 						      entry->index,
 						      mailbox);
-					if (err)
-						goto out_mailbox;
+				if (err)
+					goto out_mailbox;
 				members_count =
 					be32_to_cpu(mgm->members_count) &
 					0xffffff;
@@ -659,8 +657,8 @@ static int remove_promisc_qp(struct mlx4_dev *dev, u8 port,
 				err = mlx4_WRITE_ENTRY(dev,
 						       entry->index,
 						       mailbox);
-					if (err)
-						goto out_mailbox;
+				if (err)
+					goto out_mailbox;
 			}
 		}
 	}
@@ -752,8 +750,10 @@ static const u8 __promisc_mode[] = {
 	[MLX4_FS_REGULAR]   = 0x0,
 	[MLX4_FS_ALL_DEFAULT] = 0x1,
 	[MLX4_FS_MC_DEFAULT] = 0x3,
-	[MLX4_FS_UC_SNIFFER] = 0x4,
-	[MLX4_FS_MC_SNIFFER] = 0x5,
+	[MLX4_FS_MIRROR_RX_PORT] = 0x4,
+	[MLX4_FS_MIRROR_SX_PORT] = 0x5,
+	[MLX4_FS_UC_SNIFFER] = 0x6,
+	[MLX4_FS_MC_SNIFFER] = 0x7,
 };
 
 int mlx4_map_sw_to_hw_steering_mode(struct mlx4_dev *dev,
@@ -955,6 +955,10 @@ static void mlx4_err_rule(struct mlx4_dev *dev, char *str,
 					cur->ib.dst_gid_msk);
 			break;
 
+		case MLX4_NET_TRANS_RULE_ID_VXLAN:
+			len += snprintf(buf + len, BUF_SIZE - len,
+					"VNID = %d ", be32_to_cpu(cur->vxlan.vni));
+			break;
 		case MLX4_NET_TRANS_RULE_ID_IPV6:
 			break;
 
@@ -995,12 +999,27 @@ int mlx4_flow_attach(struct mlx4_dev *dev,
 	}
 
 	ret = mlx4_QP_FLOW_STEERING_ATTACH(dev, mailbox, size >> 2, reg_id);
-	if (ret == -ENOMEM)
+	if (ret == -ENOMEM) {
 		mlx4_err_rule(dev,
 			      "mcg table is full. Fail to register network rule\n",
 			      rule);
-	else if (ret)
-		mlx4_err_rule(dev, "Fail to register network rule\n", rule);
+	} else if (ret) {
+		if (ret == -ENXIO) {
+			if (dev->caps.steering_mode != MLX4_STEERING_MODE_DEVICE_MANAGED)
+				mlx4_err_rule(dev,
+					      "DMFS is not enabled, "
+					      "failed to register network rule.\n",
+					      rule);
+			else
+				mlx4_err_rule(dev,
+					      "Rule exceeds the dmfs_high_rate_mode limitations, "
+					      "failed to register network rule.\n",
+					      rule);
+
+		} else {
+			mlx4_err_rule(dev, "Fail to register network rule.\n", rule);
+		}
+	}
 
 	mlx4_free_cmd_mailbox(dev, mailbox);
 
@@ -1083,7 +1102,7 @@ int mlx4_qp_attach_common(struct mlx4_dev *dev, struct mlx4_qp *qp, u8 gid[16],
 	struct mlx4_cmd_mailbox *mailbox;
 	struct mlx4_mgm *mgm;
 	u32 members_count;
-	int index, prev;
+	int index = -1, prev;
 	int link = 0;
 	int i;
 	int err;
@@ -1162,13 +1181,14 @@ int mlx4_qp_attach_common(struct mlx4_dev *dev, struct mlx4_qp *qp, u8 gid[16],
 		goto out;
 
 out:
-	if (prot == MLX4_PROT_ETH) {
+	if (prot == MLX4_PROT_ETH && index != -1) {
 		/* manage the steering entry for promisc mode */
 		if (new_entry)
-			new_steering_entry(dev, port, steer, index, qp->qpn);
+			err = new_steering_entry(dev, port, steer,
+						 index, qp->qpn);
 		else
-			existing_steering_entry(dev, port, steer,
-						index, qp->qpn);
+			err = existing_steering_entry(dev, port, steer,
+						      index, qp->qpn);
 	}
 	if (err && link && index != -1) {
 		if (index < dev->caps.num_mgms)
@@ -1299,6 +1319,9 @@ out:
 	mutex_unlock(&priv->mcg_table.mutex);
 
 	mlx4_free_cmd_mailbox(dev, mailbox);
+	if (err && dev->persist->state & MLX4_DEVICE_STATE_INTERNAL_ERROR)
+		/* In case device is under an error, return success as a closing command */
+		err = 0;
 	return err;
 }
 
@@ -1328,6 +1351,9 @@ static int mlx4_QP_ATTACH(struct mlx4_dev *dev, struct mlx4_qp *qp,
 		       MLX4_CMD_WRAPPED);
 
 	mlx4_free_cmd_mailbox(dev, mailbox);
+	if (err && !attach &&
+	    dev->persist->state & MLX4_DEVICE_STATE_INTERNAL_ERROR)
+		err = 0;
 	return err;
 }
 

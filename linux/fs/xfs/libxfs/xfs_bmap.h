@@ -28,36 +28,47 @@ struct xfs_trans;
 extern kmem_zone_t	*xfs_bmap_free_item_zone;
 
 /*
+ * Argument structure for xfs_bmap_alloc.
+ */
+struct xfs_bmalloca {
+	xfs_fsblock_t		*firstblock; /* i/o first block allocated */
+	struct xfs_defer_ops	*dfops;	/* bmap freelist */
+	struct xfs_trans	*tp;	/* transaction pointer */
+	struct xfs_inode	*ip;	/* incore inode pointer */
+	struct xfs_bmbt_irec	prev;	/* extent before the new one */
+	struct xfs_bmbt_irec	got;	/* extent after, or delayed */
+
+	xfs_fileoff_t		offset;	/* offset in file filling in */
+	xfs_extlen_t		length;	/* i/o length asked/allocated */
+	xfs_fsblock_t		blkno;	/* starting block of new extent */
+
+	struct xfs_btree_cur	*cur;	/* btree cursor */
+	xfs_extnum_t		idx;	/* current extent index */
+	int			nallocs;/* number of extents alloc'd */
+	int			logflags;/* flags for transaction logging */
+
+	xfs_extlen_t		total;	/* total blocks needed for xaction */
+	xfs_extlen_t		minlen;	/* minimum allocation size (blocks) */
+	xfs_extlen_t		minleft; /* amount must be left after alloc */
+	bool			eof;	/* set if allocating past last extent */
+	bool			wasdel;	/* replacing a delayed allocation */
+	bool			aeof;	/* allocated space at eof */
+	bool			conv;	/* overwriting unwritten extents */
+	char			userdata;/* userdata mask */
+	int			flags;
+};
+
+/*
  * List of extents to be free "later".
  * The list is kept sorted on xbf_startblock.
  */
-typedef struct xfs_bmap_free_item
+struct xfs_extent_free_item
 {
-	xfs_fsblock_t		xbfi_startblock;/* starting fs block number */
-	xfs_extlen_t		xbfi_blockcount;/* number of blocks in extent */
-	struct xfs_bmap_free_item *xbfi_next;	/* link to next entry */
-} xfs_bmap_free_item_t;
-
-/*
- * Header for free extent list.
- *
- * xbf_low is used by the allocator to activate the lowspace algorithm -
- * when free space is running low the extent allocator may choose to
- * allocate an extent from an AG without leaving sufficient space for
- * a btree split when inserting the new extent.  In this case the allocator
- * will enable the lowspace algorithm which is supposed to allow further
- * allocations (such as btree splits and newroots) to allocate from
- * sequential AGs.  In order to avoid locking AGs out of order the lowspace
- * algorithm will start searching for free space from AG 0.  If the correct
- * transaction reservations have been made then this algorithm will eventually
- * find all the space it needs.
- */
-typedef	struct xfs_bmap_free
-{
-	xfs_bmap_free_item_t	*xbf_first;	/* list of to-be-free extents */
-	int			xbf_count;	/* count of items on list */
-	int			xbf_low;	/* alloc in low mode */
-} xfs_bmap_free_t;
+	xfs_fsblock_t		xefi_startblock;/* starting fs block number */
+	xfs_extlen_t		xefi_blockcount;/* number of blocks in extent */
+	struct list_head	xefi_list;
+	struct xfs_owner_info	xefi_oinfo;	/* extent owner */
+};
 
 #define	XFS_BMAP_MAX_NMAP	4
 
@@ -78,6 +89,14 @@ typedef	struct xfs_bmap_free
  */
 #define XFS_BMAPI_CONVERT	0x040
 
+/*
+ * allocate zeroed extents - this requires all newly allocated user data extents
+ * to be initialised to zero. It will be ignored if XFS_BMAPI_METADATA is set.
+ * Use in conjunction with XFS_BMAPI_CONVERT to convert unwritten extents found
+ * during the allocation range to zeroed written extents.
+ */
+#define XFS_BMAPI_ZERO		0x080
+
 #define XFS_BMAPI_FLAGS \
 	{ XFS_BMAPI_ENTIRE,	"ENTIRE" }, \
 	{ XFS_BMAPI_METADATA,	"METADATA" }, \
@@ -85,7 +104,8 @@ typedef	struct xfs_bmap_free
 	{ XFS_BMAPI_PREALLOC,	"PREALLOC" }, \
 	{ XFS_BMAPI_IGSTATE,	"IGSTATE" }, \
 	{ XFS_BMAPI_CONTIG,	"CONTIG" }, \
-	{ XFS_BMAPI_CONVERT,	"CONVERT" }
+	{ XFS_BMAPI_CONVERT,	"CONVERT" }, \
+	{ XFS_BMAPI_ZERO,	"ZERO" }
 
 
 static inline int xfs_bmapi_aflag(int w)
@@ -98,12 +118,6 @@ static inline int xfs_bmapi_aflag(int w)
  */
 #define	DELAYSTARTBLOCK		((xfs_fsblock_t)-1LL)
 #define	HOLESTARTBLOCK		((xfs_fsblock_t)-2LL)
-
-static inline void xfs_bmap_init(xfs_bmap_free_t *flp, xfs_fsblock_t *fbp)
-{
-	((flp)->xbf_first = NULL, (flp)->xbf_count = 0, \
-		(flp)->xbf_low = 0, *(fbp) = NULLFSBLOCK);
-}
 
 /*
  * Flags for xfs_bmap_add_extent*.
@@ -135,6 +149,11 @@ static inline void xfs_bmap_init(xfs_bmap_free_t *flp, xfs_fsblock_t *fbp)
  */
 #define XFS_BMAP_MAX_SHIFT_EXTENTS	1
 
+enum shift_direction {
+	SHIFT_LEFT = 0,
+	SHIFT_RIGHT,
+};
+
 #ifdef DEBUG
 void	xfs_bmap_trace_exlist(struct xfs_inode *ip, xfs_extnum_t cnt,
 		int whichfork, unsigned long caller_ip);
@@ -146,9 +165,9 @@ void	xfs_bmap_trace_exlist(struct xfs_inode *ip, xfs_extnum_t cnt,
 
 int	xfs_bmap_add_attrfork(struct xfs_inode *ip, int size, int rsvd);
 void	xfs_bmap_local_to_extents_empty(struct xfs_inode *ip, int whichfork);
-void	xfs_bmap_add_free(xfs_fsblock_t bno, xfs_filblks_t len,
-		struct xfs_bmap_free *flist, struct xfs_mount *mp);
-void	xfs_bmap_cancel(struct xfs_bmap_free *flist);
+void	xfs_bmap_add_free(struct xfs_mount *mp, struct xfs_defer_ops *dfops,
+			  xfs_fsblock_t bno, xfs_filblks_t len,
+			  struct xfs_owner_info *oinfo);
 void	xfs_bmap_compute_maxlevels(struct xfs_mount *mp, int whichfork);
 int	xfs_bmap_first_unused(struct xfs_trans *tp, struct xfs_inode *ip,
 		xfs_extlen_t len, xfs_fileoff_t *unused, int whichfork);
@@ -162,25 +181,30 @@ int	xfs_bmap_read_extents(struct xfs_trans *tp, struct xfs_inode *ip,
 int	xfs_bmapi_read(struct xfs_inode *ip, xfs_fileoff_t bno,
 		xfs_filblks_t len, struct xfs_bmbt_irec *mval,
 		int *nmap, int flags);
-int	xfs_bmapi_delay(struct xfs_inode *ip, xfs_fileoff_t bno,
-		xfs_filblks_t len, struct xfs_bmbt_irec *mval,
-		int *nmap, int flags);
 int	xfs_bmapi_write(struct xfs_trans *tp, struct xfs_inode *ip,
 		xfs_fileoff_t bno, xfs_filblks_t len, int flags,
 		xfs_fsblock_t *firstblock, xfs_extlen_t total,
 		struct xfs_bmbt_irec *mval, int *nmap,
-		struct xfs_bmap_free *flist);
+		struct xfs_defer_ops *dfops);
 int	xfs_bunmapi(struct xfs_trans *tp, struct xfs_inode *ip,
 		xfs_fileoff_t bno, xfs_filblks_t len, int flags,
 		xfs_extnum_t nexts, xfs_fsblock_t *firstblock,
-		struct xfs_bmap_free *flist, int *done);
+		struct xfs_defer_ops *dfops, int *done);
 int	xfs_check_nostate_extents(struct xfs_ifork *ifp, xfs_extnum_t idx,
 		xfs_extnum_t num);
 uint	xfs_default_attroffset(struct xfs_inode *ip);
 int	xfs_bmap_shift_extents(struct xfs_trans *tp, struct xfs_inode *ip,
-		int *done, xfs_fileoff_t start_fsb,
-		xfs_fileoff_t offset_shift_fsb, xfs_extnum_t *current_ext,
-		xfs_fsblock_t *firstblock, struct xfs_bmap_free	*flist,
+		xfs_fileoff_t *next_fsb, xfs_fileoff_t offset_shift_fsb,
+		int *done, xfs_fileoff_t stop_fsb, xfs_fsblock_t *firstblock,
+		struct xfs_defer_ops *dfops, enum shift_direction direction,
 		int num_exts);
+int	xfs_bmap_split_extent(struct xfs_inode *ip, xfs_fileoff_t split_offset);
+struct xfs_bmbt_rec_host *
+	xfs_bmap_search_extents(struct xfs_inode *ip, xfs_fileoff_t bno,
+		int fork, int *eofp, xfs_extnum_t *lastxp,
+		struct xfs_bmbt_irec *gotp, struct xfs_bmbt_irec *prevp);
+int	xfs_bmapi_reserve_delalloc(struct xfs_inode *ip, xfs_fileoff_t aoff,
+		xfs_filblks_t len, struct xfs_bmbt_irec *got,
+		struct xfs_bmbt_irec *prev, xfs_extnum_t *lastx, int eof);
 
 #endif	/* __XFS_BMAP_H__ */

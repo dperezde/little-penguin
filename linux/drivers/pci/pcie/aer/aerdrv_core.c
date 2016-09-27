@@ -27,11 +27,6 @@
 #include <linux/kfifo.h>
 #include "aerdrv.h"
 
-static bool forceload;
-static bool nosourceid;
-module_param(forceload, bool, 0);
-module_param(nosourceid, bool, 0);
-
 #define	PCI_EXP_AER_FLAGS	(PCI_EXP_DEVCTL_CERE | PCI_EXP_DEVCTL_NFERE | \
 				 PCI_EXP_DEVCTL_FERE | PCI_EXP_DEVCTL_URRE)
 
@@ -74,6 +69,34 @@ int pci_cleanup_aer_uncorrect_error_status(struct pci_dev *dev)
 }
 EXPORT_SYMBOL_GPL(pci_cleanup_aer_uncorrect_error_status);
 
+int pci_cleanup_aer_error_status_regs(struct pci_dev *dev)
+{
+	int pos;
+	u32 status;
+	int port_type;
+
+	if (!pci_is_pcie(dev))
+		return -ENODEV;
+
+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+	if (!pos)
+		return -EIO;
+
+	port_type = pci_pcie_type(dev);
+	if (port_type == PCI_EXP_TYPE_ROOT_PORT) {
+		pci_read_config_dword(dev, pos + PCI_ERR_ROOT_STATUS, &status);
+		pci_write_config_dword(dev, pos + PCI_ERR_ROOT_STATUS, status);
+	}
+
+	pci_read_config_dword(dev, pos + PCI_ERR_COR_STATUS, &status);
+	pci_write_config_dword(dev, pos + PCI_ERR_COR_STATUS, status);
+
+	pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_STATUS, &status);
+	pci_write_config_dword(dev, pos + PCI_ERR_UNCOR_STATUS, status);
+
+	return 0;
+}
+
 /**
  * add_error_device - list device to be handled
  * @e_info: pointer to error info
@@ -104,7 +127,8 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
 	 * When bus id is equal to 0, it might be a bad id
 	 * reported by root port.
 	 */
-	if (!nosourceid && (PCI_BUS_NUM(e_info->id) != 0)) {
+	if ((PCI_BUS_NUM(e_info->id) != 0) &&
+	    !(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_AERSID)) {
 		/* Device ID match? */
 		if (e_info->id == ((dev->bus->number << 8) | dev->devfn))
 			return true;
@@ -116,10 +140,10 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
 
 	/*
 	 * When either
-	 *      1) nosourceid==y;
-	 *      2) bus id is equal to 0. Some ports might lose the bus
+	 *      1) bus id is equal to 0. Some ports might lose the bus
 	 *              id of error source id;
-	 *      3) There are multiple errors and prior id comparing fails;
+	 *      2) bus flag PCI_BUS_FLAGS_NO_AERSID is set
+	 *      3) There are multiple errors and prior ID comparing fails;
 	 * We check AER status registers to find possible reporter.
 	 */
 	if (atomic_read(&dev->enable_cnt) == 0)
@@ -218,7 +242,7 @@ static int report_error_detected(struct pci_dev *dev, void *data)
 		!dev->driver->err_handler ||
 		!dev->driver->err_handler->error_detected) {
 		if (result_data->state == pci_channel_io_frozen &&
-			!(dev->hdr_type & PCI_HEADER_TYPE_BRIDGE)) {
+			dev->hdr_type != PCI_HEADER_TYPE_BRIDGE) {
 			/*
 			 * In case of fatal recovery, if one of down-
 			 * stream device has no driver. We might be
@@ -241,7 +265,7 @@ static int report_error_detected(struct pci_dev *dev, void *data)
 		 * without recovery.
 		 */
 
-		if (!(dev->hdr_type & PCI_HEADER_TYPE_BRIDGE))
+		if (dev->hdr_type != PCI_HEADER_TYPE_BRIDGE)
 			vote = PCI_ERS_RESULT_NO_AER_DRIVER;
 		else
 			vote = PCI_ERS_RESULT_NONE;
@@ -341,7 +365,7 @@ static pci_ers_result_t broadcast_error_message(struct pci_dev *dev,
 	else
 		result_data.result = PCI_ERS_RESULT_RECOVERED;
 
-	if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
+	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
 		/*
 		 * If the error is reported by a bridge, we think this error
 		 * is related to the downstream link of the bridge, so we
@@ -412,7 +436,7 @@ static pci_ers_result_t reset_link(struct pci_dev *dev)
 	pci_ers_result_t status;
 	struct pcie_port_service_driver *driver;
 
-	if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
+	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
 		/* Reset this port for all subordinates */
 		udev = dev;
 	} else {
@@ -425,8 +449,7 @@ static pci_ers_result_t reset_link(struct pci_dev *dev)
 
 	if (driver && driver->reset_link) {
 		status = driver->reset_link(udev);
-	} else if (pci_pcie_type(udev) == PCI_EXP_TYPE_DOWNSTREAM ||
-		pci_pcie_type(udev) == PCI_EXP_TYPE_ROOT_PORT) {
+	} else if (udev->has_secondary_link) {
 		status = default_reset_link(udev);
 	} else {
 		dev_printk(KERN_DEBUG, &dev->dev,
@@ -633,7 +656,7 @@ static int get_device_error_info(struct pci_dev *dev, struct aer_err_info *info)
 			&info->mask);
 		if (!(info->status & ~info->mask))
 			return 0;
-	} else if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE ||
+	} else if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
 		info->severity == AER_NONFATAL) {
 
 		/* Link is still healthy for IO reads */
@@ -784,22 +807,4 @@ void aer_isr(struct work_struct *work)
 	while (get_e_source(rpc, &e_src))
 		aer_isr_one_error(p_device, &e_src);
 	mutex_unlock(&rpc->rpc_mutex);
-
-	wake_up(&rpc->wait_release);
-}
-
-/**
- * aer_init - provide AER initialization
- * @dev: pointer to AER pcie device
- *
- * Invoked when AER service driver is loaded.
- */
-int aer_init(struct pcie_device *dev)
-{
-	if (forceload) {
-		dev_printk(KERN_DEBUG, &dev->device,
-			   "aerdrv forceload requested.\n");
-		pcie_aer_force_firmware_first(dev->port, 0);
-	}
-	return 0;
 }

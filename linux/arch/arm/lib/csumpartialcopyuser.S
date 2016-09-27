@@ -17,6 +17,19 @@
 
 		.text
 
+#ifdef CONFIG_CPU_SW_DOMAIN_PAN
+		.macro	save_regs
+		mrc	p15, 0, ip, c3, c0, 0
+		stmfd	sp!, {r1, r2, r4 - r8, ip, lr}
+		uaccess_enable ip
+		.endm
+
+		.macro	load_regs
+		ldmfd	sp!, {r1, r2, r4 - r8, ip, lr}
+		mcr	p15, 0, ip, c3, c0, 0
+		ret	lr
+		.endm
+#else
 		.macro	save_regs
 		stmfd	sp!, {r1, r2, r4 - r8, lr}
 		.endm
@@ -24,6 +37,7 @@
 		.macro	load_regs
 		ldmfd	sp!, {r1, r2, r4 - r8, pc}
 		.endm
+#endif
 
 		.macro	load1b,	reg1
 		ldrusr	\reg1, r0, 1
@@ -59,6 +73,7 @@
 
 #define FN_ENTRY	ENTRY(csum_partial_copy_from_user)
 #define FN_EXIT		ENDPROC(csum_partial_copy_from_user)
+#define FN_EXPORT	EXPORT_SYMBOL(csum_partial_copy_from_user)
 
 #include "csumpartialcopygeneric.S"
 
@@ -68,7 +83,7 @@
  * so properly, we would have to add in whatever registers were loaded before
  * the fault, which, with the current asm above is not predictable.
  */
-		.pushsection .fixup,"ax"
+		.pushsection .text.fixup,"ax"
 		.align	4
 9001:		mov	r4, #-EFAULT
 		ldr	r5, [sp, #8*4]		@ *err_ptr

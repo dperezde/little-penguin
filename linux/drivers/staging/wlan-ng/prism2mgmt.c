@@ -113,7 +113,7 @@
 *	process thread  (usually)
 *	interrupt
 ----------------------------------------------------------------*/
-int prism2mgmt_scan(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_scan(struct wlandevice *wlandev, void *msgp)
 {
 	int result = 0;
 	hfa384x_t *hw = wlandev->priv;
@@ -366,7 +366,7 @@ exit:
 *	process thread  (usually)
 *	interrupt
 ----------------------------------------------------------------*/
-int prism2mgmt_scan_results(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_scan_results(struct wlandevice *wlandev, void *msgp)
 {
 	int result = 0;
 	struct p80211msg_dot11req_scan_results *req;
@@ -375,7 +375,7 @@ int prism2mgmt_scan_results(wlandevice_t *wlandev, void *msgp)
 
 	int count;
 
-	req = (struct p80211msg_dot11req_scan_results *) msgp;
+	req = msgp;
 
 	req->resultcode.status = P80211ENUM_msgitem_status_data_ok;
 
@@ -525,7 +525,7 @@ exit:
 *	process thread  (usually)
 *	interrupt
 ----------------------------------------------------------------*/
-int prism2mgmt_start(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_start(struct wlandevice *wlandev, void *msgp)
 {
 	int result = 0;
 	hfa384x_t *hw = wlandev->priv;
@@ -685,9 +685,7 @@ failed:
 	msg->resultcode.data = P80211ENUM_resultcode_invalid_parameters;
 
 done:
-	result = 0;
-
-	return result;
+	return 0;
 }
 
 /*----------------------------------------------------------------
@@ -708,7 +706,7 @@ done:
 * Call context:
 *	process thread  (usually)
 ----------------------------------------------------------------*/
-int prism2mgmt_readpda(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_readpda(struct wlandevice *wlandev, void *msgp)
 {
 	hfa384x_t *hw = wlandev->priv;
 	struct p80211msg_p2req_readpda *msg = msgp;
@@ -774,7 +772,7 @@ int prism2mgmt_readpda(wlandevice_t *wlandev, void *msgp)
 * Call context:
 *	process thread  (usually)
 ----------------------------------------------------------------*/
-int prism2mgmt_ramdl_state(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_ramdl_state(struct wlandevice *wlandev, void *msgp)
 {
 	hfa384x_t *hw = wlandev->priv;
 	struct p80211msg_p2req_ramdl_state *msg = msgp;
@@ -829,7 +827,7 @@ int prism2mgmt_ramdl_state(wlandevice_t *wlandev, void *msgp)
 * Call context:
 *	process thread  (usually)
 ----------------------------------------------------------------*/
-int prism2mgmt_ramdl_write(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_ramdl_write(struct wlandevice *wlandev, void *msgp)
 {
 	hfa384x_t *hw = wlandev->priv;
 	struct p80211msg_p2req_ramdl_write *msg = msgp;
@@ -890,7 +888,7 @@ int prism2mgmt_ramdl_write(wlandevice_t *wlandev, void *msgp)
 * Call context:
 *	process thread  (usually)
 ----------------------------------------------------------------*/
-int prism2mgmt_flashdl_state(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_flashdl_state(struct wlandevice *wlandev, void *msgp)
 {
 	int result = 0;
 	hfa384x_t *hw = wlandev->priv;
@@ -961,7 +959,7 @@ int prism2mgmt_flashdl_state(wlandevice_t *wlandev, void *msgp)
 * Call context:
 *	process thread  (usually)
 ----------------------------------------------------------------*/
-int prism2mgmt_flashdl_write(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_flashdl_write(struct wlandevice *wlandev, void *msgp)
 {
 	hfa384x_t *hw = wlandev->priv;
 	struct p80211msg_p2req_flashdl_write *msg = msgp;
@@ -1021,7 +1019,7 @@ int prism2mgmt_flashdl_write(wlandevice_t *wlandev, void *msgp)
 *	process thread  (usually)
 *	interrupt
 ----------------------------------------------------------------*/
-int prism2mgmt_autojoin(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_autojoin(struct wlandevice *wlandev, void *msgp)
 {
 	hfa384x_t *hw = wlandev->priv;
 	int result = 0;
@@ -1092,7 +1090,7 @@ int prism2mgmt_autojoin(wlandevice_t *wlandev, void *msgp)
 *	process thread  (usually)
 *	interrupt
 ----------------------------------------------------------------*/
-int prism2mgmt_wlansniff(wlandevice_t *wlandev, void *msgp)
+int prism2mgmt_wlansniff(struct wlandevice *wlandev, void *msgp)
 {
 	int result = 0;
 	struct p80211msg_lnxreq_wlansniff *msg = msgp;
@@ -1107,8 +1105,7 @@ int prism2mgmt_wlansniff(wlandevice_t *wlandev, void *msgp)
 		if (wlandev->netdev->type == ARPHRD_ETHER) {
 			msg->resultcode.data =
 			    P80211ENUM_resultcode_invalid_parameters;
-			result = 0;
-			goto exit;
+			return 0;
 		}
 		/* Disable monitor mode */
 		result = hfa384x_cmd_monitor(hw, HFA384x_MONITOR_DISABLE);
@@ -1166,9 +1163,7 @@ int prism2mgmt_wlansniff(wlandevice_t *wlandev, void *msgp)
 
 		netdev_info(wlandev->netdev, "monitor mode disabled\n");
 		msg->resultcode.data = P80211ENUM_resultcode_success;
-		result = 0;
-		goto exit;
-		break;
+		return 0;
 	case P80211ENUM_truth_true:
 		/* Disable the port (if enabled), only check Port 0 */
 		if (hw->port_enabled[0]) {
@@ -1313,19 +1308,13 @@ int prism2mgmt_wlansniff(wlandevice_t *wlandev, void *msgp)
 		}
 
 		msg->resultcode.data = P80211ENUM_resultcode_success;
-		result = 0;
-		goto exit;
-		break;
+		return 0;
 	default:
 		msg->resultcode.data = P80211ENUM_resultcode_invalid_parameters;
-		result = 0;
-		goto exit;
-		break;
+		return 0;
 	}
 
 failed:
 	msg->resultcode.data = P80211ENUM_resultcode_refused;
-	result = 0;
-exit:
-	return result;
+	return 0;
 }

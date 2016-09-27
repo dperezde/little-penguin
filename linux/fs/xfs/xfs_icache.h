@@ -34,6 +34,14 @@ struct xfs_eofblocks {
 #define SYNC_TRYLOCK		0x0002  /* only try to lock inodes */
 
 /*
+ * tags for inode radix tree
+ */
+#define XFS_ICI_NO_TAG		(-1)	/* special flag for an untagged lookup
+					   in xfs_inode_ag_iterator */
+#define XFS_ICI_RECLAIM_TAG	0	/* inode is to be reclaimed */
+#define XFS_ICI_EOFBLOCKS_TAG	1	/* inode has blocks beyond EOF */
+
+/*
  * Flags for xfs_iget()
  */
 #define XFS_IGET_CREATE		0x1
@@ -60,6 +68,7 @@ void xfs_inode_clear_eofblocks_tag(struct xfs_inode *ip);
 int xfs_icache_free_eofblocks(struct xfs_mount *, struct xfs_eofblocks *);
 int xfs_inode_free_quota_eofblocks(struct xfs_inode *ip);
 void xfs_eofblocks_worker(struct work_struct *);
+void xfs_queue_eofblocks(struct xfs_mount *);
 
 int xfs_inode_ag_iterator(struct xfs_mount *mp,
 	int (*execute)(struct xfs_inode *ip, int flags, void *args),

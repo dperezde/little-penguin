@@ -35,6 +35,7 @@
 #include <asm/vdso.h>
 #include <asm/switch_to.h>
 #include <asm/tm.h>
+#include <asm/asm-prototypes.h>
 
 #include "signal.h"
 
@@ -74,6 +75,19 @@ static const char fmt64[] = KERN_INFO \
 	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
 
 /*
+ * This computes a quad word aligned pointer inside the vmx_reserve array
+ * element. For historical reasons sigcontext might not be quad word aligned,
+ * but the location we write the VMX regs to must be. See the comment in
+ * sigcontext for more detail.
+ */
+#ifdef CONFIG_ALTIVEC
+static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
+{
+	return (elf_vrreg_t __user *) (((unsigned long)sc->vmx_reserve + 15) & ~0xful);
+}
+#endif
+
+/*
  * Set up the sigcontext for the signal frame.
  */
 
@@ -90,7 +104,8 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
 	 * v_regs pointer or not
 	 */
 #ifdef CONFIG_ALTIVEC
-	elf_vrreg_t __user *v_regs = (elf_vrreg_t __user *)(((unsigned long)sc->vmx_reserve + 15) & ~0xful);
+	elf_vrreg_t __user *v_regs = sigcontext_vmx_regs(sc);
+	unsigned long vrsave;
 #endif
 	unsigned long msr = regs->msr;
 	long err = 0;
@@ -112,9 +127,13 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
 	 * use altivec.
 	 */
-	if (cpu_has_feature(CPU_FTR_ALTIVEC))
-		current->thread.vrsave = mfspr(SPRN_VRSAVE);
-	err |= __put_user(current->thread.vrsave, (u32 __user *)&v_regs[33]);
+	vrsave = 0;
+	if (cpu_has_feature(CPU_FTR_ALTIVEC)) {
+		vrsave = mfspr(SPRN_VRSAVE);
+		current->thread.vrsave = vrsave;
+	}
+
+	err |= __put_user(vrsave, (u32 __user *)&v_regs[33]);
 #else /* CONFIG_ALTIVEC */
 	err |= __put_user(0, &sc->v_regs);
 #endif /* CONFIG_ALTIVEC */
@@ -134,7 +153,7 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
 	 * VMX data.
 	 */
 	if (current->thread.used_vsr && ctx_has_vsx_region) {
-		__giveup_vsx(current);
+		flush_vsx_to_thread(current);
 		v_regs += ELF_NVRREG;
 		err |= copy_vsx_to_user(v_regs, current);
 		/* set MSR_VSX in the MSR value in the frame to
@@ -181,10 +200,8 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
 	 * v_regs pointer or not.
 	 */
 #ifdef CONFIG_ALTIVEC
-	elf_vrreg_t __user *v_regs = (elf_vrreg_t __user *)
-		(((unsigned long)sc->vmx_reserve + 15) & ~0xful);
-	elf_vrreg_t __user *tm_v_regs = (elf_vrreg_t __user *)
-		(((unsigned long)tm_sc->vmx_reserve + 15) & ~0xful);
+	elf_vrreg_t __user *v_regs = sigcontext_vmx_regs(sc);
+	elf_vrreg_t __user *tm_v_regs = sigcontext_vmx_regs(tm_sc);
 #endif
 	unsigned long msr = regs->msr;
 	long err = 0;
@@ -259,7 +276,7 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
 	 * VMX data.
 	 */
 	if (current->thread.used_vsr) {
-		__giveup_vsx(current);
+		flush_vsx_to_thread(current);
 		v_regs += ELF_NVRREG;
 		tm_v_regs += ELF_NVRREG;
 
@@ -339,15 +356,6 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
 		err |=  __get_user(set->sig[0], &sc->oldmask);
 
 	/*
-	 * Do this before updating the thread state in
-	 * current->thread.fpr/vr.  That way, if we get preempted
-	 * and another task grabs the FPU/Altivec, it won't be
-	 * tempted to save the current CPU state into the thread_struct
-	 * and corrupt what we are writing there.
-	 */
-	discard_lazy_cpu_state();
-
-	/*
 	 * Force reload of FP/VEC.
 	 * This has to be done before copying stuff into current->thread.fpr/vr
 	 * for the reasons explained in the previous comment.
@@ -361,9 +369,11 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
 	if (v_regs && !access_ok(VERIFY_READ, v_regs, 34 * sizeof(vector128)))
 		return -EFAULT;
 	/* Copy 33 vec registers (vr0..31 and vscr) from the stack */
-	if (v_regs != NULL && (msr & MSR_VEC) != 0)
+	if (v_regs != NULL && (msr & MSR_VEC) != 0) {
 		err |= __copy_from_user(&current->thread.vr_state, v_regs,
 					33 * sizeof(vector128));
+		current->thread.used_vr = true;
+	}
 	else if (current->thread.used_vr)
 		memset(&current->thread.vr_state, 0, 33 * sizeof(vector128));
 	/* Always get VRSAVE back */
@@ -383,9 +393,10 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
 	 * buffer for formatting, then into the taskstruct.
 	 */
 	v_regs += ELF_NVRREG;
-	if ((msr & MSR_VSX) != 0)
+	if ((msr & MSR_VSX) != 0) {
 		err |= copy_vsx_from_user(current, v_regs);
-	else
+		current->thread.used_vsr = true;
+	} else
 		for (i = 0; i < 32 ; i++)
 			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
 #endif
@@ -427,6 +438,10 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
 
 	/* get MSR separately, transfer the LE bit if doing signal return */
 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
+	/* Don't allow reserved mode. */
+	if (MSR_TM_RESV(msr))
+		return -EINVAL;
+
 	/* pull in MSR TM from user context */
 	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
 
@@ -454,15 +469,6 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
 	err |= __get_user(regs->result, &sc->gp_regs[PT_RESULT]);
 
 	/*
-	 * Do this before updating the thread state in
-	 * current->thread.fpr/vr.  That way, if we get preempted
-	 * and another task grabs the FPU/Altivec, it won't be
-	 * tempted to save the current CPU state into the thread_struct
-	 * and corrupt what we are writing there.
-	 */
-	discard_lazy_cpu_state();
-
-	/*
 	 * Force reload of FP/VEC.
 	 * This has to be done before copying stuff into current->thread.fpr/vr
 	 * for the reasons explained in the previous comment.
@@ -485,6 +491,7 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
 					33 * sizeof(vector128));
 		err |= __copy_from_user(&current->thread.transact_vr, tm_v_regs,
 					33 * sizeof(vector128));
+		current->thread.used_vr = true;
 	}
 	else if (current->thread.used_vr) {
 		memset(&current->thread.vr_state, 0, 33 * sizeof(vector128));
@@ -518,6 +525,7 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
 		tm_v_regs += ELF_NVRREG;
 		err |= copy_vsx_from_user(current, v_regs);
 		err |= copy_transact_vsx_from_user(current, tm_v_regs);
+		current->thread.used_vsr = true;
 	} else {
 		for (i = 0; i < 32 ; i++) {
 			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
@@ -666,7 +674,7 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
 #endif
 
 	/* Always make any pending restarted system calls return -EINTR */
-	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+	current->restart_block.fn = do_no_restart_syscall;
 
 	if (!access_ok(VERIFY_READ, uc, sizeof(*uc)))
 		goto badframe;
@@ -674,7 +682,21 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
 	if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
 		goto badframe;
 	set_current_blocked(&set);
+
 #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+	/*
+	 * If there is a transactional state then throw it away.
+	 * The purpose of a sigreturn is to destroy all traces of the
+	 * signal frame, this includes any transactional state created
+	 * within in. We only check for suspended as we can never be
+	 * active in the kernel, we are active, there is nothing better to
+	 * do than go ahead and Bad Thing later.
+	 * The cause is not important as there will never be a
+	 * recheckpoint so it's not user visible.
+	 */
+	if (MSR_TM_SUSPENDED(mfmsr()))
+		tm_reclaim_current(0);
+
 	if (__get_user(msr, &uc->uc_mcontext.gp_regs[PT_MSR]))
 		goto badframe;
 	if (MSR_TM_ACTIVE(msr)) {

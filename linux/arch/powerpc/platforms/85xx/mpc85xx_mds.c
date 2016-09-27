@@ -34,6 +34,7 @@
 #include <linux/of_device.h>
 #include <linux/phy.h>
 #include <linux/memblock.h>
+#include <linux/fsl/guts.h>
 
 #include <linux/atomic.h>
 #include <asm/time.h>
@@ -47,11 +48,10 @@
 #include <sysdev/fsl_soc.h>
 #include <sysdev/fsl_pci.h>
 #include <sysdev/simple_gpio.h>
-#include <asm/qe.h>
-#include <asm/qe_ic.h>
+#include <soc/fsl/qe/qe.h>
+#include <soc/fsl/qe/qe_ic.h>
 #include <asm/mpic.h>
 #include <asm/swiotlb.h>
-#include <asm/fsl_guts.h>
 #include "smp.h"
 
 #include "mpc85xx.h"
@@ -376,9 +376,7 @@ static void __init mpc85xx_mds_pic_init(void)
 
 static int __init mpc85xx_mds_probe(void)
 {
-        unsigned long root = of_get_flat_dt_root();
-
-        return of_flat_dt_is_compatible(root, "MPC85xxMDS");
+	return of_machine_is_compatible("MPC85xxMDS");
 }
 
 define_machine(mpc8568_mds) {
@@ -398,9 +396,7 @@ define_machine(mpc8568_mds) {
 
 static int __init mpc8569_mds_probe(void)
 {
-	unsigned long root = of_get_flat_dt_root();
-
-	return of_flat_dt_is_compatible(root, "fsl,MPC8569EMDS");
+	return of_machine_is_compatible("fsl,MPC8569EMDS");
 }
 
 define_machine(mpc8569_mds) {
@@ -420,9 +416,7 @@ define_machine(mpc8569_mds) {
 
 static int __init p1021_mds_probe(void)
 {
-	unsigned long root = of_get_flat_dt_root();
-
-	return of_flat_dt_is_compatible(root, "fsl,P1021MDS");
+	return of_machine_is_compatible("fsl,P1021MDS");
 
 }
 

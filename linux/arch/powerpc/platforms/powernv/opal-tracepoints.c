@@ -1,8 +1,9 @@
 #include <linux/percpu.h>
 #include <linux/jump_label.h>
 #include <asm/trace.h>
+#include <asm/asm-prototypes.h>
 
-#ifdef CONFIG_JUMP_LABEL
+#ifdef HAVE_JUMP_LABEL
 struct static_key opal_tracepoint_key = STATIC_KEY_INIT;
 
 void opal_tracepoint_regfunc(void)
@@ -48,7 +49,7 @@ void __trace_opal_entry(unsigned long opcode, unsigned long *args)
 
 	local_irq_save(flags);
 
-	depth = &__get_cpu_var(opal_trace_depth);
+	depth = this_cpu_ptr(&opal_trace_depth);
 
 	if (*depth)
 		goto out;
@@ -69,7 +70,7 @@ void __trace_opal_exit(long opcode, unsigned long retval)
 
 	local_irq_save(flags);
 
-	depth = &__get_cpu_var(opal_trace_depth);
+	depth = this_cpu_ptr(&opal_trace_depth);
 
 	if (*depth)
 		goto out;

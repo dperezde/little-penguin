@@ -20,7 +20,6 @@
 
 #include "xfs_inode_buf.h"
 #include "xfs_inode_fork.h"
-#include "xfs_dinode.h"
 
 /*
  * Kernel only inode definitions
@@ -28,7 +27,7 @@
 struct xfs_dinode;
 struct xfs_inode;
 struct xfs_buf;
-struct xfs_bmap_free;
+struct xfs_defer_ops;
 struct xfs_bmbt_irec;
 struct xfs_inode_log_item;
 struct xfs_mount;
@@ -57,13 +56,14 @@ typedef struct xfs_inode {
 	struct xfs_inode_log_item *i_itemp;	/* logging information */
 	mrlock_t		i_lock;		/* inode lock */
 	mrlock_t		i_iolock;	/* inode IO lock */
+	mrlock_t		i_mmaplock;	/* inode mmap IO lock */
 	atomic_t		i_pincount;	/* inode pin count */
 	spinlock_t		i_flags_lock;	/* inode i_flags lock */
 	/* Miscellaneous state. */
 	unsigned long		i_flags;	/* see defined flags below */
 	unsigned int		i_delayed_blks;	/* count of delay alloc blks */
 
-	xfs_icdinode_t		i_d;		/* most of ondisk inode */
+	struct xfs_icdinode	i_d;		/* most of ondisk inode */
 
 	/* VFS inode */
 	struct inode		i_vnode;	/* embedded VFS inode */
@@ -88,7 +88,7 @@ static inline struct inode *VFS_I(struct xfs_inode *ip)
  */
 static inline xfs_fsize_t XFS_ISIZE(struct xfs_inode *ip)
 {
-	if (S_ISREG(ip->i_d.di_mode))
+	if (S_ISREG(VFS_I(ip)->i_mode))
 		return i_size_read(VFS_I(ip));
 	return ip->i_d.di_size;
 }
@@ -102,7 +102,7 @@ xfs_new_eof(struct xfs_inode *ip, xfs_fsize_t new_size)
 {
 	xfs_fsize_t i_size = i_size_read(VFS_I(ip));
 
-	if (new_size > i_size)
+	if (new_size > i_size || new_size < 0)
 		new_size = i_size;
 	return new_size > ip->i_d.di_size ? new_size : 0;
 }
@@ -216,6 +216,7 @@ xfs_get_initial_prid(struct xfs_inode *dp)
 #define __XFS_IPINNED_BIT	8	 /* wakeup key for zero pin count */
 #define XFS_IPINNED		(1 << __XFS_IPINNED_BIT)
 #define XFS_IDONTCACHE		(1 << 9) /* don't cache the inode long term */
+#define XFS_IEOFBLOCKS		(1 << 10)/* has the preallocblocks tag set */
 
 /*
  * Per-lifetime flags need to be reset when re-using a reclaimable inode during
@@ -264,24 +265,29 @@ static inline int xfs_isiflocked(struct xfs_inode *ip)
 #define	XFS_IOLOCK_SHARED	(1<<1)
 #define	XFS_ILOCK_EXCL		(1<<2)
 #define	XFS_ILOCK_SHARED	(1<<3)
+#define	XFS_MMAPLOCK_EXCL	(1<<4)
+#define	XFS_MMAPLOCK_SHARED	(1<<5)
 
 #define XFS_LOCK_MASK		(XFS_IOLOCK_EXCL | XFS_IOLOCK_SHARED \
-				| XFS_ILOCK_EXCL | XFS_ILOCK_SHARED)
+				| XFS_ILOCK_EXCL | XFS_ILOCK_SHARED \
+				| XFS_MMAPLOCK_EXCL | XFS_MMAPLOCK_SHARED)
 
 #define XFS_LOCK_FLAGS \
 	{ XFS_IOLOCK_EXCL,	"IOLOCK_EXCL" }, \
 	{ XFS_IOLOCK_SHARED,	"IOLOCK_SHARED" }, \
 	{ XFS_ILOCK_EXCL,	"ILOCK_EXCL" }, \
-	{ XFS_ILOCK_SHARED,	"ILOCK_SHARED" }
+	{ XFS_ILOCK_SHARED,	"ILOCK_SHARED" }, \
+	{ XFS_MMAPLOCK_EXCL,	"MMAPLOCK_EXCL" }, \
+	{ XFS_MMAPLOCK_SHARED,	"MMAPLOCK_SHARED" }
 
 
 /*
  * Flags for lockdep annotations.
  *
  * XFS_LOCK_PARENT - for directory operations that require locking a
- * parent directory inode and a child entry inode.  The parent gets locked
- * with this flag so it gets a lockdep subclass of 1 and the child entry
- * lock will have a lockdep subclass of 0.
+ * parent directory inode and a child entry inode. IOLOCK requires nesting,
+ * MMAPLOCK does not support this class, ILOCK requires a single subclass
+ * to differentiate parent from child.
  *
  * XFS_LOCK_RTBITMAP/XFS_LOCK_RTSUM - the realtime device bitmap and summary
  * inodes do not participate in the normal lock order, and thus have their
@@ -290,30 +296,72 @@ static inline int xfs_isiflocked(struct xfs_inode *ip)
  * XFS_LOCK_INUMORDER - for locking several inodes at the some time
  * with xfs_lock_inodes().  This flag is used as the starting subclass
  * and each subsequent lock acquired will increment the subclass by one.
- * So the first lock acquired will have a lockdep subclass of 4, the
- * second lock will have a lockdep subclass of 5, and so on. It is
- * the responsibility of the class builder to shift this to the correct
- * portion of the lock_mode lockdep mask.
+ * However, MAX_LOCKDEP_SUBCLASSES == 8, which means we are greatly
+ * limited to the subclasses we can represent via nesting. We need at least
+ * 5 inodes nest depth for the ILOCK through rename, and we also have to support
+ * XFS_ILOCK_PARENT, which gives 6 subclasses. Then we have XFS_ILOCK_RTBITMAP
+ * and XFS_ILOCK_RTSUM, which are another 2 unique subclasses, so that's all
+ * 8 subclasses supported by lockdep.
+ *
+ * This also means we have to number the sub-classes in the lowest bits of
+ * the mask we keep, and we have to ensure we never exceed 3 bits of lockdep
+ * mask and we can't use bit-masking to build the subclasses. What a mess.
+ *
+ * Bit layout:
+ *
+ * Bit		Lock Region
+ * 16-19	XFS_IOLOCK_SHIFT dependencies
+ * 20-23	XFS_MMAPLOCK_SHIFT dependencies
+ * 24-31	XFS_ILOCK_SHIFT dependencies
+ *
+ * IOLOCK values
+ *
+ * 0-3		subclass value
+ * 4-7		PARENT subclass values
+ *
+ * MMAPLOCK values
+ *
+ * 0-3		subclass value
+ * 4-7		unused
+ *
+ * ILOCK values
+ * 0-4		subclass values
+ * 5		PARENT subclass (not nestable)
+ * 6		RTBITMAP subclass (not nestable)
+ * 7		RTSUM subclass (not nestable)
+ * 
  */
-#define XFS_LOCK_PARENT		1
-#define XFS_LOCK_RTBITMAP	2
-#define XFS_LOCK_RTSUM		3
-#define XFS_LOCK_INUMORDER	4
+#define XFS_IOLOCK_SHIFT		16
+#define XFS_IOLOCK_PARENT_VAL		4
+#define XFS_IOLOCK_MAX_SUBCLASS		(XFS_IOLOCK_PARENT_VAL - 1)
+#define XFS_IOLOCK_DEP_MASK		0x000f0000
+#define	XFS_IOLOCK_PARENT		(XFS_IOLOCK_PARENT_VAL << XFS_IOLOCK_SHIFT)
 
-#define XFS_IOLOCK_SHIFT	16
-#define	XFS_IOLOCK_PARENT	(XFS_LOCK_PARENT << XFS_IOLOCK_SHIFT)
+#define XFS_MMAPLOCK_SHIFT		20
+#define XFS_MMAPLOCK_NUMORDER		0
+#define XFS_MMAPLOCK_MAX_SUBCLASS	3
+#define XFS_MMAPLOCK_DEP_MASK		0x00f00000
 
-#define XFS_ILOCK_SHIFT		24
-#define	XFS_ILOCK_PARENT	(XFS_LOCK_PARENT << XFS_ILOCK_SHIFT)
-#define	XFS_ILOCK_RTBITMAP	(XFS_LOCK_RTBITMAP << XFS_ILOCK_SHIFT)
-#define	XFS_ILOCK_RTSUM		(XFS_LOCK_RTSUM << XFS_ILOCK_SHIFT)
+#define XFS_ILOCK_SHIFT			24
+#define XFS_ILOCK_PARENT_VAL		5
+#define XFS_ILOCK_MAX_SUBCLASS		(XFS_ILOCK_PARENT_VAL - 1)
+#define XFS_ILOCK_RTBITMAP_VAL		6
+#define XFS_ILOCK_RTSUM_VAL		7
+#define XFS_ILOCK_DEP_MASK		0xff000000
+#define	XFS_ILOCK_PARENT		(XFS_ILOCK_PARENT_VAL << XFS_ILOCK_SHIFT)
+#define	XFS_ILOCK_RTBITMAP		(XFS_ILOCK_RTBITMAP_VAL << XFS_ILOCK_SHIFT)
+#define	XFS_ILOCK_RTSUM			(XFS_ILOCK_RTSUM_VAL << XFS_ILOCK_SHIFT)
 
-#define XFS_IOLOCK_DEP_MASK	0x00ff0000
-#define XFS_ILOCK_DEP_MASK	0xff000000
-#define XFS_LOCK_DEP_MASK	(XFS_IOLOCK_DEP_MASK | XFS_ILOCK_DEP_MASK)
+#define XFS_LOCK_SUBCLASS_MASK	(XFS_IOLOCK_DEP_MASK | \
+				 XFS_MMAPLOCK_DEP_MASK | \
+				 XFS_ILOCK_DEP_MASK)
 
-#define XFS_IOLOCK_DEP(flags)	(((flags) & XFS_IOLOCK_DEP_MASK) >> XFS_IOLOCK_SHIFT)
-#define XFS_ILOCK_DEP(flags)	(((flags) & XFS_ILOCK_DEP_MASK) >> XFS_ILOCK_SHIFT)
+#define XFS_IOLOCK_DEP(flags)	(((flags) & XFS_IOLOCK_DEP_MASK) \
+					>> XFS_IOLOCK_SHIFT)
+#define XFS_MMAPLOCK_DEP(flags)	(((flags) & XFS_MMAPLOCK_DEP_MASK) \
+					>> XFS_MMAPLOCK_SHIFT)
+#define XFS_ILOCK_DEP(flags)	(((flags) & XFS_ILOCK_DEP_MASK) \
+					>> XFS_ILOCK_SHIFT)
 
 /*
  * For multiple groups support: if S_ISGID bit is set in the parent
@@ -322,8 +370,7 @@ static inline int xfs_isiflocked(struct xfs_inode *ip)
  */
 #define XFS_INHERIT_GID(pip)	\
 	(((pip)->i_mount->m_flags & XFS_MOUNT_GRPID) || \
-	 ((pip)->i_d.di_mode & S_ISGID))
-
+	 (VFS_I(pip)->i_mode & S_ISGID))
 
 int		xfs_release(struct xfs_inode *ip);
 void		xfs_inactive(struct xfs_inode *ip);
@@ -340,7 +387,7 @@ int		xfs_link(struct xfs_inode *tdp, struct xfs_inode *sip,
 int		xfs_rename(struct xfs_inode *src_dp, struct xfs_name *src_name,
 			   struct xfs_inode *src_ip, struct xfs_inode *target_dp,
 			   struct xfs_name *target_name,
-			   struct xfs_inode *target_ip);
+			   struct xfs_inode *target_ip, unsigned int flags);
 
 void		xfs_ilock(xfs_inode_t *, uint);
 int		xfs_ilock_nowait(xfs_inode_t *, uint);
@@ -349,25 +396,18 @@ void		xfs_ilock_demote(xfs_inode_t *, uint);
 int		xfs_isilocked(xfs_inode_t *, uint);
 uint		xfs_ilock_data_map_shared(struct xfs_inode *);
 uint		xfs_ilock_attr_map_shared(struct xfs_inode *);
-int		xfs_ialloc(struct xfs_trans *, xfs_inode_t *, umode_t,
-			   xfs_nlink_t, xfs_dev_t, prid_t, int,
-			   struct xfs_buf **, xfs_inode_t **);
 
 uint		xfs_ip2xflags(struct xfs_inode *);
-uint		xfs_dic2xflags(struct xfs_dinode *);
 int		xfs_ifree(struct xfs_trans *, xfs_inode_t *,
-			   struct xfs_bmap_free *);
+			   struct xfs_defer_ops *);
 int		xfs_itruncate_extents(struct xfs_trans **, struct xfs_inode *,
 				      int, xfs_fsize_t);
-int		xfs_iunlink(struct xfs_trans *, xfs_inode_t *);
-
 void		xfs_iext_realloc(xfs_inode_t *, int, int);
 
 void		xfs_iunpin_wait(xfs_inode_t *);
 #define xfs_ipincount(ip)	((unsigned int) atomic_read(&ip->i_pincount))
 
 int		xfs_iflush(struct xfs_inode *, struct xfs_buf **);
-void		xfs_lock_inodes(xfs_inode_t **, int, uint);
 void		xfs_lock_two_inodes(xfs_inode_t *, xfs_inode_t *, uint);
 
 xfs_extlen_t	xfs_get_extsz_hint(struct xfs_inode *ip);
@@ -375,13 +415,49 @@ xfs_extlen_t	xfs_get_extsz_hint(struct xfs_inode *ip);
 int		xfs_dir_ialloc(struct xfs_trans **, struct xfs_inode *, umode_t,
 			       xfs_nlink_t, xfs_dev_t, prid_t, int,
 			       struct xfs_inode **, int *);
-int		xfs_droplink(struct xfs_trans *, struct xfs_inode *);
-int		xfs_bumplink(struct xfs_trans *, struct xfs_inode *);
 
 /* from xfs_file.c */
-int		xfs_zero_eof(struct xfs_inode *, xfs_off_t, xfs_fsize_t);
-int		xfs_iozero(struct xfs_inode *, loff_t, size_t);
+enum xfs_prealloc_flags {
+	XFS_PREALLOC_SET	= (1 << 1),
+	XFS_PREALLOC_CLEAR	= (1 << 2),
+	XFS_PREALLOC_SYNC	= (1 << 3),
+	XFS_PREALLOC_INVISIBLE	= (1 << 4),
+};
 
+int	xfs_update_prealloc_flags(struct xfs_inode *ip,
+				  enum xfs_prealloc_flags flags);
+int	xfs_zero_eof(struct xfs_inode *ip, xfs_off_t offset,
+		     xfs_fsize_t isize, bool *did_zeroing);
+int	xfs_zero_range(struct xfs_inode *ip, xfs_off_t pos, xfs_off_t count,
+		bool *did_zero);
+loff_t	__xfs_seek_hole_data(struct inode *inode, loff_t start,
+			     loff_t eof, int whence);
+
+
+/* from xfs_iops.c */
+extern void xfs_setup_inode(struct xfs_inode *ip);
+extern void xfs_setup_iops(struct xfs_inode *ip);
+
+/*
+ * When setting up a newly allocated inode, we need to call
+ * xfs_finish_inode_setup() once the inode is fully instantiated at
+ * the VFS level to prevent the rest of the world seeing the inode
+ * before we've completed instantiation. Otherwise we can do it
+ * the moment the inode lookup is complete.
+ */
+static inline void xfs_finish_inode_setup(struct xfs_inode *ip)
+{
+	xfs_iflags_clear(ip, XFS_INEW);
+	barrier();
+	unlock_new_inode(VFS_I(ip));
+}
+
+static inline void xfs_setup_existing_inode(struct xfs_inode *ip)
+{
+	xfs_setup_inode(ip);
+	xfs_setup_iops(ip);
+	xfs_finish_inode_setup(ip);
+}
 
 #define IHOLD(ip) \
 do { \
@@ -397,15 +473,5 @@ do { \
 } while (0)
 
 extern struct kmem_zone	*xfs_inode_zone;
-
-/*
- * Flags for read/write calls
- */
-#define XFS_IO_ISDIRECT	0x00001		/* bypass page cache */
-#define XFS_IO_INVIS	0x00002		/* don't update inode timestamps */
-
-#define XFS_IO_FLAGS \
-	{ XFS_IO_ISDIRECT,	"DIRECT" }, \
-	{ XFS_IO_INVIS,		"INVIS"}
 
 #endif	/* __XFS_INODE_H__ */

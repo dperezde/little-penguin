@@ -8,18 +8,22 @@
  * one or more tasks, and thus the waitqueue is never empty.
  */
 
-#include "../perf.h"
-#include "../util/util.h"
+/* For the CLR_() macros */
+#include <pthread.h>
+
+#include <signal.h>
 #include "../util/stat.h"
-#include "../util/parse-options.h"
-#include "../util/header.h"
+#include <subcmd/parse-options.h>
+#include <linux/compiler.h>
+#include <linux/kernel.h>
+#include <linux/time64.h>
+#include <errno.h>
 #include "bench.h"
 #include "futex.h"
 
 #include <err.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include <pthread.h>
 
 /* all threads will block on the same futex */
 static u_int32_t futex1 = 0;
@@ -31,16 +35,18 @@ static u_int32_t futex1 = 0;
 static unsigned int nwakes = 1;
 
 pthread_t *worker;
-static bool done = false, silent = false;
+static bool done = false, silent = false, fshared = false;
 static pthread_mutex_t thread_lock;
 static pthread_cond_t thread_parent, thread_worker;
 static struct stats waketime_stats, wakeup_stats;
 static unsigned int ncpus, threads_starting, nthreads = 0;
+static int futex_flag = 0;
 
 static const struct option options[] = {
 	OPT_UINTEGER('t', "threads", &nthreads, "Specify amount of threads"),
 	OPT_UINTEGER('w', "nwakes",  &nwakes,   "Specify amount of threads to wake at once"),
 	OPT_BOOLEAN( 's', "silent",  &silent,   "Silent mode: do not display data/details"),
+	OPT_BOOLEAN( 'S', "shared",  &fshared,  "Use shared futexes instead of private ones"),
 	OPT_END()
 };
 
@@ -58,7 +64,12 @@ static void *workerfn(void *arg __maybe_unused)
 	pthread_cond_wait(&thread_worker, &thread_lock);
 	pthread_mutex_unlock(&thread_lock);
 
-	futex_wait(&futex1, 0, NULL, FUTEX_PRIVATE_FLAG);
+	while (1) {
+		if (futex_wait(&futex1, 0, NULL, futex_flag) != EINTR)
+			break;
+	}
+
+	pthread_exit(NULL);
 	return NULL;
 }
 
@@ -71,7 +82,7 @@ static void print_summary(void)
 	printf("Wokeup %d of %d threads in %.4f ms (+-%.2f%%)\n",
 	       wakeup_avg,
 	       nthreads,
-	       waketime_avg/1e3,
+	       waketime_avg / USEC_PER_MSEC,
 	       rel_stddev_stats(waketime_stddev, waketime_avg));
 }
 
@@ -130,9 +141,12 @@ int bench_futex_wake(int argc, const char **argv,
 	if (!worker)
 		err(EXIT_FAILURE, "calloc");
 
-	printf("Run summary [PID %d]: blocking on %d threads (at futex %p), "
+	if (!fshared)
+		futex_flag = FUTEX_PRIVATE_FLAG;
+
+	printf("Run summary [PID %d]: blocking on %d threads (at [%s] futex %p), "
 	       "waking up %d at a time.\n\n",
-	       getpid(), nthreads, &futex1, nwakes);
+	       getpid(), nthreads, fshared ? "shared":"private",  &futex1, nwakes);
 
 	init_stats(&wakeup_stats);
 	init_stats(&waketime_stats);
@@ -160,7 +174,7 @@ int bench_futex_wake(int argc, const char **argv,
 		/* Ok, all threads are patiently blocked, start waking folks up */
 		gettimeofday(&start, NULL);
 		while (nwoken != nthreads)
-			nwoken += futex_wake(&futex1, nwakes, FUTEX_PRIVATE_FLAG);
+			nwoken += futex_wake(&futex1, nwakes, futex_flag);
 		gettimeofday(&end, NULL);
 		timersub(&end, &start, &runtime);
 
@@ -169,7 +183,7 @@ int bench_futex_wake(int argc, const char **argv,
 
 		if (!silent) {
 			printf("[Run %d]: Wokeup %d of %d threads in %.4f ms\n",
-			       j + 1, nwoken, nthreads, runtime.tv_usec/1e3);
+			       j + 1, nwoken, nthreads, runtime.tv_usec / (double)USEC_PER_MSEC);
 		}
 
 		for (i = 0; i < nthreads; i++) {

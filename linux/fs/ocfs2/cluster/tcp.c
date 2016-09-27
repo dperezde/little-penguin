@@ -536,7 +536,7 @@ static void o2net_set_nn_state(struct o2net_node *nn,
 	if (nn->nn_persistent_error || nn->nn_sc_valid)
 		wake_up(&nn->nn_sc_wq);
 
-	if (!was_err && nn->nn_persistent_error) {
+	if (was_valid && !was_err && nn->nn_persistent_error) {
 		o2quo_conn_err(o2net_num_from_nn(nn));
 		queue_delayed_work(o2net_wq, &nn->nn_still_up,
 				   msecs_to_jiffies(O2NET_QUORUM_DELAY_MS));
@@ -600,10 +600,11 @@ static void o2net_set_nn_state(struct o2net_node *nn,
 static void o2net_data_ready(struct sock *sk)
 {
 	void (*ready)(struct sock *sk);
+	struct o2net_sock_container *sc;
 
-	read_lock(&sk->sk_callback_lock);
-	if (sk->sk_user_data) {
-		struct o2net_sock_container *sc = sk->sk_user_data;
+	read_lock_bh(&sk->sk_callback_lock);
+	sc = sk->sk_user_data;
+	if (sc) {
 		sclog(sc, "data_ready hit\n");
 		o2net_set_data_ready_time(sc);
 		o2net_sc_queue_work(sc, &sc->sc_rx_work);
@@ -611,7 +612,7 @@ static void o2net_data_ready(struct sock *sk)
 	} else {
 		ready = sk->sk_data_ready;
 	}
-	read_unlock(&sk->sk_callback_lock);
+	read_unlock_bh(&sk->sk_callback_lock);
 
 	ready(sk);
 }
@@ -622,7 +623,7 @@ static void o2net_state_change(struct sock *sk)
 	void (*state_change)(struct sock *sk);
 	struct o2net_sock_container *sc;
 
-	read_lock(&sk->sk_callback_lock);
+	read_lock_bh(&sk->sk_callback_lock);
 	sc = sk->sk_user_data;
 	if (sc == NULL) {
 		state_change = sk->sk_state_change;
@@ -649,7 +650,7 @@ static void o2net_state_change(struct sock *sk)
 		break;
 	}
 out:
-	read_unlock(&sk->sk_callback_lock);
+	read_unlock_bh(&sk->sk_callback_lock);
 	state_change(sk);
 }
 
@@ -925,7 +926,7 @@ static int o2net_send_tcp_msg(struct socket *sock, struct kvec *vec,
 			      size_t veclen, size_t total)
 {
 	int ret;
-	struct msghdr msg;
+	struct msghdr msg = {.msg_flags = 0,};
 
 	if (sock == NULL) {
 		ret = -EINVAL;
@@ -1016,7 +1017,8 @@ void o2net_fill_node_map(unsigned long *map, unsigned bytes)
 
 	memset(map, 0, bytes);
 	for (node = 0; node < O2NM_MAX_NODES; ++node) {
-		o2net_tx_can_proceed(o2net_nn_from_num(node), &sc, &ret);
+		if (!o2net_tx_can_proceed(o2net_nn_from_num(node), &sc, &ret))
+			continue;
 		if (!ret) {
 			set_bit(node, map);
 			sc_put(sc);
@@ -1601,23 +1603,27 @@ static void o2net_start_connect(struct work_struct *work)
 	struct sockaddr_in myaddr = {0, }, remoteaddr = {0, };
 	int ret = 0, stop;
 	unsigned int timeout;
+	unsigned int noio_flag;
 
+	/*
+	 * sock_create allocates the sock with GFP_KERNEL. We must set
+	 * per-process flag PF_MEMALLOC_NOIO so that all allocations done
+	 * by this process are done as if GFP_NOIO was specified. So we
+	 * are not reentering filesystem while doing memory reclaim.
+	 */
+	noio_flag = memalloc_noio_save();
 	/* if we're greater we initiate tx, otherwise we accept */
 	if (o2nm_this_node() <= o2net_num_from_nn(nn))
 		goto out;
 
 	/* watch for racing with tearing a node down */
 	node = o2nm_get_node_by_num(o2net_num_from_nn(nn));
-	if (node == NULL) {
-		ret = 0;
+	if (node == NULL)
 		goto out;
-	}
 
 	mynode = o2nm_get_node_by_num(o2nm_this_node());
-	if (mynode == NULL) {
-		ret = 0;
+	if (mynode == NULL)
 		goto out;
-	}
 
 	spin_lock(&nn->nn_lock);
 	/*
@@ -1710,6 +1716,7 @@ out:
 	if (mynode)
 		o2nm_node_put(mynode);
 
+	memalloc_noio_restore(noio_flag);
 	return;
 }
 
@@ -1721,12 +1728,13 @@ static void o2net_connect_expired(struct work_struct *work)
 	spin_lock(&nn->nn_lock);
 	if (!nn->nn_sc_valid) {
 		printk(KERN_NOTICE "o2net: No connection established with "
-		       "node %u after %u.%u seconds, giving up.\n",
+		       "node %u after %u.%u seconds, check network and"
+		       " cluster configuration.\n",
 		     o2net_num_from_nn(nn),
 		     o2net_idle_timeout() / 1000,
 		     o2net_idle_timeout() % 1000);
 
-		o2net_set_nn_state(nn, NULL, 0, -ENOTCONN);
+		o2net_set_nn_state(nn, NULL, 0, 0);
 	}
 	spin_unlock(&nn->nn_lock);
 }
@@ -1835,6 +1843,15 @@ static int o2net_accept_one(struct socket *sock, int *more)
 	struct o2nm_node *local_node = NULL;
 	struct o2net_sock_container *sc = NULL;
 	struct o2net_node *nn;
+	unsigned int noio_flag;
+
+	/*
+	 * sock_create_lite allocates the sock with GFP_KERNEL. We must set
+	 * per-process flag PF_MEMALLOC_NOIO so that all allocations done
+	 * by this process are done as if GFP_NOIO was specified. So we
+	 * are not reentering filesystem while doing memory reclaim.
+	 */
+	noio_flag = memalloc_noio_save();
 
 	BUG_ON(sock == NULL);
 	*more = 0;
@@ -1951,6 +1968,8 @@ out:
 		o2nm_node_put(local_node);
 	if (sc)
 		sc_put(sc);
+
+	memalloc_noio_restore(noio_flag);
 	return ret;
 }
 
@@ -1990,7 +2009,7 @@ static void o2net_listen_data_ready(struct sock *sk)
 {
 	void (*ready)(struct sock *sk);
 
-	read_lock(&sk->sk_callback_lock);
+	read_lock_bh(&sk->sk_callback_lock);
 	ready = sk->sk_user_data;
 	if (ready == NULL) { /* check for teardown race */
 		ready = sk->sk_data_ready;
@@ -2017,7 +2036,7 @@ static void o2net_listen_data_ready(struct sock *sk)
 	}
 
 out:
-	read_unlock(&sk->sk_callback_lock);
+	read_unlock_bh(&sk->sk_callback_lock);
 	if (ready != NULL)
 		ready(sk);
 }
@@ -2085,7 +2104,7 @@ int o2net_start_listening(struct o2nm_node *node)
 	BUG_ON(o2net_listen_sock != NULL);
 
 	mlog(ML_KTHREAD, "starting o2net thread...\n");
-	o2net_wq = create_singlethread_workqueue("o2net");
+	o2net_wq = alloc_ordered_workqueue("o2net", WQ_MEM_RECLAIM);
 	if (o2net_wq == NULL) {
 		mlog(ML_ERROR, "unable to launch o2net thread\n");
 		return -ENOMEM; /* ? */
@@ -2146,17 +2165,13 @@ int o2net_init(void)
 	o2quo_init();
 
 	if (o2net_debugfs_init())
-		return -ENOMEM;
+		goto out;
 
 	o2net_hand = kzalloc(sizeof(struct o2net_handshake), GFP_KERNEL);
 	o2net_keep_req = kzalloc(sizeof(struct o2net_msg), GFP_KERNEL);
 	o2net_keep_resp = kzalloc(sizeof(struct o2net_msg), GFP_KERNEL);
-	if (!o2net_hand || !o2net_keep_req || !o2net_keep_resp) {
-		kfree(o2net_hand);
-		kfree(o2net_keep_req);
-		kfree(o2net_keep_resp);
-		return -ENOMEM;
-	}
+	if (!o2net_hand || !o2net_keep_req || !o2net_keep_resp)
+		goto out;
 
 	o2net_hand->protocol_version = cpu_to_be64(O2NET_PROTOCOL_VERSION);
 	o2net_hand->connector_id = cpu_to_be64(1);
@@ -2181,6 +2196,14 @@ int o2net_init(void)
 	}
 
 	return 0;
+
+out:
+	kfree(o2net_hand);
+	kfree(o2net_keep_req);
+	kfree(o2net_keep_resp);
+	o2net_debugfs_exit();
+	o2quo_exit();
+	return -ENOMEM;
 }
 
 void o2net_exit(void)

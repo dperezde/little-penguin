@@ -20,8 +20,6 @@
 #include "xfs_format.h"
 #include "xfs_log_format.h"
 #include "xfs_trans_resv.h"
-#include "xfs_sb.h"
-#include "xfs_ag.h"
 #include "xfs_mount.h"
 #include "xfs_da_format.h"
 #include "xfs_da_btree.h"
@@ -32,7 +30,6 @@
 #include "xfs_dir2.h"
 #include "xfs_dir2_priv.h"
 #include "xfs_trace.h"
-#include "xfs_dinode.h"
 
 /*
  * Prototypes for internal functions.
@@ -129,13 +126,12 @@ xfs_dir2_block_sfsize(
 		/*
 		 * Calculate the new size, see if we should give up yet.
 		 */
-		size = xfs_dir2_sf_hdr_size(i8count) +		/* header */
-		       count +					/* namelen */
-		       count * (uint)sizeof(xfs_dir2_sf_off_t) + /* offset */
-		       namelen +				/* name */
-		       (i8count ?				/* inumber */
-				(uint)sizeof(xfs_dir2_ino8_t) * count :
-				(uint)sizeof(xfs_dir2_ino4_t) * count);
+		size = xfs_dir2_sf_hdr_size(i8count) +	/* header */
+		       count * 3 * sizeof(u8) +		/* namelen + offset */
+		       namelen +			/* name */
+		       (i8count ?			/* inumber */
+				count * XFS_INO64_SIZE :
+				count * XFS_INO32_SIZE);
 		if (size > XFS_IFORK_DSIZE(dp))
 			return size;		/* size value is a failure */
 	}
@@ -260,15 +256,12 @@ xfs_dir2_block_to_sf(
 	 *
 	 * Convert the inode to local format and copy the data in.
 	 */
-	dp->i_df.if_flags &= ~XFS_IFEXTENTS;
-	dp->i_df.if_flags |= XFS_IFINLINE;
-	dp->i_d.di_format = XFS_DINODE_FMT_LOCAL;
 	ASSERT(dp->i_df.if_bytes == 0);
-	xfs_idata_realloc(dp, size, XFS_DATA_FORK);
+	xfs_init_local_fork(dp, XFS_DATA_FORK, dst, size);
+	dp->i_d.di_format = XFS_DINODE_FMT_LOCAL;
+	dp->i_d.di_size = size;
 
 	logflags |= XFS_ILOG_DDATA;
-	memcpy(dp->i_df.if_u1.if_data, dst, size);
-	dp->i_d.di_size = size;
 	xfs_dir2_sf_check(args);
 out:
 	xfs_trans_log_inode(args->trans, dp, logflags);
@@ -325,10 +318,7 @@ xfs_dir2_sf_addname(
 		/*
 		 * Yes, adjust the inode size.  old count + (parent + new)
 		 */
-		incr_isize +=
-			(sfp->count + 2) *
-			((uint)sizeof(xfs_dir2_ino8_t) -
-			 (uint)sizeof(xfs_dir2_ino4_t));
+		incr_isize += (sfp->count + 2) * XFS_INO64_DIFF;
 		objchange = 1;
 	}
 
@@ -455,13 +445,11 @@ xfs_dir2_sf_addname_hard(
 	xfs_dir2_sf_hdr_t	*oldsfp;	/* original shortform dir */
 	xfs_dir2_sf_entry_t	*sfep;		/* entry in new dir */
 	xfs_dir2_sf_hdr_t	*sfp;		/* new shortform dir */
-	struct xfs_mount	*mp;
 
 	/*
 	 * Copy the old directory to the stack buffer.
 	 */
 	dp = args->dp;
-	mp = dp->i_mount;
 
 	sfp = (xfs_dir2_sf_hdr_t *)dp->i_df.if_u1.if_data;
 	old_isize = (int)dp->i_d.di_size;
@@ -542,7 +530,6 @@ xfs_dir2_sf_addname_pick(
 	xfs_inode_t		*dp;		/* incore directory inode */
 	int			holefit;	/* found hole it will fit in */
 	int			i;		/* entry number */
-	xfs_mount_t		*mp;		/* filesystem mount point */
 	xfs_dir2_data_aoff_t	offset;		/* data block offset */
 	xfs_dir2_sf_entry_t	*sfep;		/* shortform entry */
 	xfs_dir2_sf_hdr_t	*sfp;		/* shortform structure */
@@ -550,7 +537,6 @@ xfs_dir2_sf_addname_pick(
 	int			used;		/* data bytes used */
 
 	dp = args->dp;
-	mp = dp->i_mount;
 
 	sfp = (xfs_dir2_sf_hdr_t *)dp->i_df.if_u1.if_data;
 	size = dp->d_ops->data_entsize(args->namelen);
@@ -616,10 +602,8 @@ xfs_dir2_sf_check(
 	int			offset;		/* data offset */
 	xfs_dir2_sf_entry_t	*sfep;		/* shortform dir entry */
 	xfs_dir2_sf_hdr_t	*sfp;		/* shortform structure */
-	struct xfs_mount	*mp;
 
 	dp = args->dp;
-	mp = dp->i_mount;
 
 	sfp = (xfs_dir2_sf_hdr_t *)dp->i_df.if_u1.if_data;
 	offset = dp->d_ops->data_first_offset;
@@ -909,11 +893,7 @@ xfs_dir2_sf_replace(
 		int	error;			/* error return value */
 		int	newsize;		/* new inode size */
 
-		newsize =
-			dp->i_df.if_bytes +
-			(sfp->count + 1) *
-			((uint)sizeof(xfs_dir2_ino8_t) -
-			 (uint)sizeof(xfs_dir2_ino4_t));
+		newsize = dp->i_df.if_bytes + (sfp->count + 1) * XFS_INO64_DIFF;
 		/*
 		 * Won't fit as shortform, convert to block then do replace.
 		 */
@@ -1016,12 +996,10 @@ xfs_dir2_sf_toino4(
 	int			oldsize;	/* old inode size */
 	xfs_dir2_sf_entry_t	*sfep;		/* new sf entry */
 	xfs_dir2_sf_hdr_t	*sfp;		/* new sf directory */
-	struct xfs_mount	*mp;
 
 	trace_xfs_dir2_sf_toino4(args);
 
 	dp = args->dp;
-	mp = dp->i_mount;
 
 	/*
 	 * Copy the old directory to the buffer.
@@ -1036,10 +1014,7 @@ xfs_dir2_sf_toino4(
 	/*
 	 * Compute the new inode size.
 	 */
-	newsize =
-		oldsize -
-		(oldsfp->count + 1) *
-		((uint)sizeof(xfs_dir2_ino8_t) - (uint)sizeof(xfs_dir2_ino4_t));
+	newsize = oldsize - (oldsfp->count + 1) * XFS_INO64_DIFF;
 	xfs_idata_realloc(dp, -oldsize, XFS_DATA_FORK);
 	xfs_idata_realloc(dp, newsize, XFS_DATA_FORK);
 	/*
@@ -1062,7 +1037,7 @@ xfs_dir2_sf_toino4(
 	     i++, sfep = dp->d_ops->sf_nextentry(sfp, sfep),
 		  oldsfep = dp->d_ops->sf_nextentry(oldsfp, oldsfep)) {
 		sfep->namelen = oldsfep->namelen;
-		sfep->offset = oldsfep->offset;
+		memcpy(sfep->offset, oldsfep->offset, sizeof(sfep->offset));
 		memcpy(sfep->name, oldsfep->name, sfep->namelen);
 		dp->d_ops->sf_put_ino(sfp, sfep,
 				      dp->d_ops->sf_get_ino(oldsfp, oldsfep));
@@ -1094,12 +1069,10 @@ xfs_dir2_sf_toino8(
 	int			oldsize;	/* old inode size */
 	xfs_dir2_sf_entry_t	*sfep;		/* new sf entry */
 	xfs_dir2_sf_hdr_t	*sfp;		/* new sf directory */
-	struct xfs_mount	*mp;
 
 	trace_xfs_dir2_sf_toino8(args);
 
 	dp = args->dp;
-	mp = dp->i_mount;
 
 	/*
 	 * Copy the old directory to the buffer.
@@ -1114,10 +1087,7 @@ xfs_dir2_sf_toino8(
 	/*
 	 * Compute the new inode size (nb: entry count + 1 for parent)
 	 */
-	newsize =
-		oldsize +
-		(oldsfp->count + 1) *
-		((uint)sizeof(xfs_dir2_ino8_t) - (uint)sizeof(xfs_dir2_ino4_t));
+	newsize = oldsize + (oldsfp->count + 1) * XFS_INO64_DIFF;
 	xfs_idata_realloc(dp, -oldsize, XFS_DATA_FORK);
 	xfs_idata_realloc(dp, newsize, XFS_DATA_FORK);
 	/*
@@ -1140,7 +1110,7 @@ xfs_dir2_sf_toino8(
 	     i++, sfep = dp->d_ops->sf_nextentry(sfp, sfep),
 		  oldsfep = dp->d_ops->sf_nextentry(oldsfp, oldsfep)) {
 		sfep->namelen = oldsfep->namelen;
-		sfep->offset = oldsfep->offset;
+		memcpy(sfep->offset, oldsfep->offset, sizeof(sfep->offset));
 		memcpy(sfep->name, oldsfep->name, sfep->namelen);
 		dp->d_ops->sf_put_ino(sfp, sfep,
 				      dp->d_ops->sf_get_ino(oldsfp, oldsfep));

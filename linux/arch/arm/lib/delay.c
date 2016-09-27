@@ -24,16 +24,18 @@
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/export.h>
 #include <linux/timex.h>
 
 /*
  * Default to the loop-based delay implementation.
  */
-struct arm_delay_ops arm_delay_ops = {
+struct arm_delay_ops arm_delay_ops __ro_after_init = {
 	.delay		= __loop_delay,
 	.const_udelay	= __loop_const_udelay,
 	.udelay		= __loop_udelay,
 };
+EXPORT_SYMBOL(arm_delay_ops);
 
 static const struct delay_timer *delay_timer;
 static bool delay_calibrated;
@@ -82,6 +84,12 @@ void __init register_current_timer_delay(const struct delay_timer *timer)
 	clocks_calc_mult_shift(&new_mult, &new_shift, timer->freq,
 			       NSEC_PER_SEC, 3600);
 	res = cyc_to_ns(1ULL, new_mult, new_shift);
+
+	if (res > 1000) {
+		pr_err("Ignoring delay timer %ps, which has insufficient resolution of %lluns\n",
+			timer, res);
+		return;
+	}
 
 	if (!delay_calibrated && (!delay_res || (res < delay_res))) {
 		pr_info("Switching to timer-based delay loop, resolution %lluns\n", res);

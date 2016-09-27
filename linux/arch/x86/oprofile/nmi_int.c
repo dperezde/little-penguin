@@ -64,11 +64,11 @@ u64 op_x86_get_ctrl(struct op_x86_model_spec const *model,
 static int profile_exceptions_notify(unsigned int val, struct pt_regs *regs)
 {
 	if (ctr_running)
-		model->check_ctrs(regs, &__get_cpu_var(cpu_msrs));
+		model->check_ctrs(regs, this_cpu_ptr(&cpu_msrs));
 	else if (!nmi_enabled)
 		return NMI_DONE;
 	else
-		model->stop(&__get_cpu_var(cpu_msrs));
+		model->stop(this_cpu_ptr(&cpu_msrs));
 	return NMI_HANDLED;
 }
 
@@ -91,7 +91,7 @@ static void nmi_cpu_save_registers(struct op_msrs *msrs)
 
 static void nmi_cpu_start(void *dummy)
 {
-	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
+	struct op_msrs const *msrs = this_cpu_ptr(&cpu_msrs);
 	if (!msrs->controls)
 		WARN_ON_ONCE(1);
 	else
@@ -111,7 +111,7 @@ static int nmi_start(void)
 
 static void nmi_cpu_stop(void *dummy)
 {
-	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
+	struct op_msrs const *msrs = this_cpu_ptr(&cpu_msrs);
 	if (!msrs->controls)
 		WARN_ON_ONCE(1);
 	else
@@ -437,7 +437,8 @@ static int oprofile_cpu_notifier(struct notifier_block *b, unsigned long action,
 				 void *data)
 {
 	int cpu = (unsigned long)data;
-	switch (action) {
+
+	switch (action & ~CPU_TASKS_FROZEN) {
 	case CPU_DOWN_FAILED:
 	case CPU_ONLINE:
 		smp_call_function_single(cpu, nmi_cpu_up, NULL, 0);
@@ -635,7 +636,7 @@ static int __init ppro_init(char **cpu_type)
 	__u8 cpu_model = boot_cpu_data.x86_model;
 	struct op_x86_model_spec *spec = &op_ppro_spec;	/* default */
 
-	if (force_cpu_type == arch_perfmon && cpu_has_arch_perfmon)
+	if (force_cpu_type == arch_perfmon && boot_cpu_has(X86_FEATURE_ARCH_PERFMON))
 		return 0;
 
 	/*
@@ -699,7 +700,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
 	char *cpu_type = NULL;
 	int ret = 0;
 
-	if (!cpu_has_apic)
+	if (!boot_cpu_has(X86_FEATURE_APIC))
 		return -ENODEV;
 
 	if (force_cpu_type == timer)
@@ -760,7 +761,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
 		if (cpu_type)
 			break;
 
-		if (!cpu_has_arch_perfmon)
+		if (!boot_cpu_has(X86_FEATURE_ARCH_PERFMON))
 			return -ENODEV;
 
 		/* use arch perfmon as fallback */

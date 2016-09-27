@@ -21,16 +21,19 @@
 #include <linux/sched.h>
 #include <linux/ioport.h>
 #include <linux/irq.h>
+#include <linux/of_fdt.h>
 #include <linux/pci.h>
 #include <linux/screen_info.h>
 #include <linux/time.h>
 
 #include <asm/fw/fw.h>
+#include <asm/mach-malta/malta-dtshim.h>
 #include <asm/mips-cm.h>
 #include <asm/mips-boards/generic.h>
 #include <asm/mips-boards/malta.h>
 #include <asm/mips-boards/maltaint.h>
 #include <asm/dma.h>
+#include <asm/prom.h>
 #include <asm/traps.h>
 #ifdef CONFIG_VT
 #include <linux/console.h>
@@ -245,11 +248,20 @@ static void __init bonito_quirks_setup(void)
 #endif
 }
 
+void __init *plat_get_fdt(void)
+{
+	return (void *)__dtb_start;
+}
+
 void __init plat_mem_setup(void)
 {
 	unsigned int i;
+	void *fdt = plat_get_fdt();
 
-	if (config_enabled(CONFIG_EVA))
+	fdt = malta_dt_shim(fdt);
+	__dt_setup_arch(fdt);
+
+	if (IS_ENABLED(CONFIG_EVA))
 		/* EVA has already been configured in mach-malta/kernel-init.h */
 		pr_info("Enhanced Virtual Addressing (EVA) activated\n");
 

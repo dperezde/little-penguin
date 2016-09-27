@@ -154,6 +154,7 @@ static struct s3c2410_uartcfg gta02_uartcfgs[] = {
 #define ADC_NOM_CHG_DETECT_1A 6
 #define ADC_NOM_CHG_DETECT_USB 43
 
+#ifdef CONFIG_PCF50633_ADC
 static void
 gta02_configure_pmu_for_charger(struct pcf50633 *pcf, void *unused, int res)
 {
@@ -174,6 +175,7 @@ gta02_configure_pmu_for_charger(struct pcf50633 *pcf, void *unused, int res)
 
 	pcf50633_mbc_usb_curlim_set(pcf, ma);
 }
+#endif
 
 static struct delayed_work gta02_charger_work;
 static int gta02_usb_vbus_draw;
@@ -597,5 +599,4 @@ MACHINE_START(NEO1973_GTA02, "GTA02")
 	.init_irq	= s3c2442_init_irq,
 	.init_machine	= gta02_machine_init,
 	.init_time	= gta02_init_time,
-	.restart	= s3c244x_restart,
 MACHINE_END
